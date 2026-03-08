@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#020617">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Game - Stage Guess Reveal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+</head>
+<body class="game-body">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader"></div>
+        <p>Loading Game...</p>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container">
+        <!-- Game Header -->
+        <header class="game-header">
+            <div class="game-title">
+                <span class="game-icon">🎭</span>
+                <h1 id="game-title">Stage Guess Reveal</h1>
+            </div>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="stat-label">Tiles Left:</span>
+                    <span id="tiles-left" class="stat-value">64</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Revealed:</span>
+                    <span id="tiles-revealed" class="stat-value">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <main class="game-main">
+            <!-- Game Board -->
+            <div class="game-board-wrapper">
+                <div id="game-board" class="game-board">
+                    <!-- Image and tiles will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Answer Display (Hidden until revealed) -->
+            <div id="answer-display" class="answer-display hidden">
+                <div class="answer-content">
+                    <h2>🎉 The Answer Is:</h2>
+                    <p id="answer-text" class="answer-text"></p>
+                    <div class="answer-actions">
+                        <button id="btn-play-again" class="btn btn-secondary">
+                            <span class="btn-icon">🔄</span> Play Again
+                        </button>
+                        <button id="btn-next-game" class="btn btn-primary">
+                            <span class="btn-icon">➡️</span> Next Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Game Controls -->
+        <footer class="game-controls">
+            <div class="control-group">
+                <button id="btn-reset" class="control-btn btn-reset" title="Reset Game (R)">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">Reset</span>
+                </button>
+                <button id="btn-random" class="control-btn btn-random" title="Random Tile (Space)">
+                    <span class="btn-icon">🎲</span>
+                    <span class="btn-text">Random</span>
+                </button>
+                <button id="btn-reveal-all" class="control-btn btn-reveal" title="Reveal All">
+                    <span class="btn-icon">👁️</span>
+                    <span class="btn-text">Reveal All</span>
+                </button>
+                <button id="btn-give-up" class="control-btn btn-giveup" title="Give Up">
+                    <span class="btn-icon">🏳️</span>
+                    <span class="btn-text">Give Up</span>
+                </button>
+            </div>
+            
+            <div class="tile-input-group">
+                <input type="number" id="tile-input" class="tile-input" 
+                       placeholder="Enter tile number..." min="1" max="100">
+                <button id="btn-reveal-tile" class="control-btn btn-primary">
+                    <span class="btn-icon">✓</span>
+                    <span class="btn-text">Reveal</span>
+                </button>
+            </div>
+
+            <div class="keyboard-shortcuts">
+                <span class="shortcut"><kbd>1-9</kbd> Reveal tiles</span>
+                <span class="shortcut"><kbd>Space</kbd> Random tile</span>
+                <span class="shortcut"><kbd>R</kbd> Reset</span>
+                <span class="shortcut"><kbd>N</kbd> Next game</span>
+                <span class="shortcut"><kbd>F</kbd> Fullscreen</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Fullscreen Button -->
+    <button id="btn-fullscreen" class="fullscreen-btn" title="Toggle Fullscreen (F)">
+        <span>⛶</span>
+    </button>
+
+    <!-- Back to Admin Link -->
+    <a href="/admin/games" class="back-link" title="Back to Games List">
+        <span>← Back</span>
+    </a>
+
+    <script src="/js/game.js"></script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#020617">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Admin Dashboard - Stage Guess Reveal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+</head>
+<body>
+    <!-- Admin Container -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon">🎭</span>
+                <h2>Admin Panel</h2>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/admin/create" class="nav-item">
+                    <span class="nav-icon">➕</span>
+                    <span>Create Game</span>
+                </a>
+                <a href="/admin/games" class="nav-item">
+                    <span class="nav-icon">🎮</span>
+                    <span>All Games</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Back to Home</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Dashboard</h1>
+                <p>Welcome to Stage Guess Reveal Game Admin</p>
+            </header>
+
+            <!-- Stats Cards -->
+            <section class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">🎮</div>
+                    <div class="stat-info">
+                        <span id="total-games" class="stat-number">0</span>
+                        <span class="stat-label">Total Games</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🖼️</div>
+                    <div class="stat-info">
+                        <span id="total-images" class="stat-number">0</span>
+                        <span class="stat-label">Images Uploaded</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-info">
+                        <span id="recent-game" class="stat-number">-</span>
+                        <span class="stat-label">Latest Game</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="action-grid">
+                    <a href="/admin/create" class="action-card">
+                        <div class="action-icon">➕</div>
+                        <h3>Create New Game</h3>
+                        <p>Upload an image and set up a new reveal game</p>
+                    </a>
+                    <a href="/admin/games" class="action-card">
+                        <div class="action-icon">📋</div>
+                        <h3>Manage Games</h3>
+                        <p>View, edit, or delete existing games</p>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Recent Games -->
+            <section class="recent-games">
+                <h2>Recent Games</h2>
+                <div id="recent-games-list" class="games-list">
+                    <!-- Games will be loaded dynamically -->
+                    <p class="loading">Loading games...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>

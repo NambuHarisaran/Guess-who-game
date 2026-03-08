@@ -1,0 +1,9 @@
+# Uploads Directory
+
+This directory stores uploaded game images.
+
+Images are automatically saved here when creating new games through the admin panel.
+
+**Supported formats:** JPG, PNG, GIF, WebP
+
+**Max file size:** 10MB

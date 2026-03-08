@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#020617">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Create Game - Stage Guess Reveal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+</head>
+<body>
+    <!-- Admin Container -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon">🎭</span>
+                <h2>Admin Panel</h2>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/admin/create" class="nav-item active">
+                    <span class="nav-icon">➕</span>
+                    <span>Create Game</span>
+                </a>
+                <a href="/admin/games" class="nav-item">
+                    <span class="nav-icon">🎮</span>
+                    <span>All Games</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Back to Home</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Create New Game</h1>
+                <p>Upload an image and configure your reveal game</p>
+            </header>
+
+            <!-- Create Game Form -->
+            <section class="form-section">
+                <form id="create-game-form" class="game-form" enctype="multipart/form-data">
+                    <!-- Game Title -->
+                    <div class="form-group">
+                        <label for="game-title">Game Title</label>
+                        <input type="text" id="game-title" name="title" 
+                               placeholder="Enter a title for this game..." required>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="form-group">
+                        <label for="game-image">Upload Image</label>
+                        <div class="upload-area" id="upload-area">
+                            <div class="upload-placeholder">
+                                <span class="upload-icon">📁</span>
+                                <p>Drag & drop an image here or click to browse</p>
+                                <span class="upload-hint">Supports: JPG, PNG, GIF, WebP (Max 10MB)</span>
+                            </div>
+                            <img id="image-preview" class="image-preview hidden" alt="Preview">
+                            <input type="file" id="game-image" name="image" 
+                                   accept="image/jpeg,image/png,image/gif,image/webp" required>
+                        </div>
+                    </div>
+
+                    <!-- Grid Size -->
+                    <div class="form-group">
+                        <label for="grid-size">Grid Size</label>
+                        <div class="grid-options">
+                            <label class="grid-option">
+                                <input type="radio" name="gridSize" value="6">
+                                <span class="grid-option-label">
+                                    <span class="grid-size">6×6</span>
+                                    <span class="grid-tiles">36 tiles</span>
+                                </span>
+                            </label>
+                            <label class="grid-option">
+                                <input type="radio" name="gridSize" value="8" checked>
+                                <span class="grid-option-label">
+                                    <span class="grid-size">8×8</span>
+                                    <span class="grid-tiles">64 tiles</span>
+                                </span>
+                            </label>
+                            <label class="grid-option">
+                                <input type="radio" name="gridSize" value="10">
+                                <span class="grid-option-label">
+                                    <span class="grid-size">10×10</span>
+                                    <span class="grid-tiles">100 tiles</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Answer -->
+                    <div class="form-group">
+                        <label for="game-answer">Correct Answer</label>
+                        <input type="text" id="game-answer" name="answer" 
+                               placeholder="Enter the correct answer (e.g., actor name)..." required>
+                        <span class="form-hint">This will be shown when the game is completed</span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <span class="btn-icon">✓</span>
+                            Create Game
+                        </button>
+                        <a href="/admin" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Preview Section -->
+            <section class="preview-section hidden" id="preview-section">
+                <h2>Grid Preview</h2>
+                <div id="grid-preview" class="grid-preview">
+                    <!-- Grid preview will be rendered here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="/js/admin-create.js"></script>
+</body>
+</html>

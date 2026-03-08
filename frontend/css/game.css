@@ -1,0 +1,722 @@
+/**
+ * Stage Guess Reveal Game - Game Screen Styles
+ * 
+ * Styles specific to the game board and reveal mechanics.
+ * Optimized for 1920x1080 projector display.
+ */
+
+/* Game Body */
+.game-body {
+    background: linear-gradient(135deg, var(--bg-darker), var(--bg-dark));
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-darker);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 10000;
+    transition: opacity var(--transition-normal);
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Game Container */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    max-height: 100vh;
+    max-height: 100dvh;
+    padding: 1rem;
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+/* Game Header */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+}
+
+.game-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.game-icon {
+    font-size: 2rem;
+}
+
+.game-title h1 {
+    font-size: 1.5rem;
+    margin: 0;
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.game-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+/* Game Main Area */
+.game-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Game Board Wrapper */
+.game-board-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+/* Game Board */
+.game-board {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    max-width: min(70vh, 80vw);
+    max-height: 70vh;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl), 0 0 60px rgba(99, 102, 241, 0.3);
+    display: grid;
+    border: 4px solid var(--primary-color);
+}
+
+/* Tile Styles */
+.tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--bg-card), var(--bg-darker));
+    border: 1px solid var(--border-color);
+    font-size: clamp(0.75rem, 2vw, 1.5rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+.tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.tile:hover:not(.revealed) {
+    transform: scale(1.05);
+    z-index: 10;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-glow);
+}
+
+.tile:hover:not(.revealed)::before {
+    opacity: 0.2;
+}
+
+.tile:active:not(.revealed) {
+    transform: scale(0.95);
+}
+
+.tile-number {
+    position: relative;
+    z-index: 1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Revealed Tile */
+.tile.revealed {
+    background: transparent;
+    border-color: transparent;
+    cursor: default;
+    pointer-events: none;
+    animation: tileReveal 0.5s ease forwards;
+}
+
+@keyframes tileReveal {
+    0% {
+        transform: scale(1) rotateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1) rotateY(90deg);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(0) rotateY(180deg);
+        opacity: 0;
+    }
+}
+
+.tile.revealed .tile-number {
+    display: none;
+}
+
+/* Answer Display */
+.answer-display {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, var(--bg-darker), transparent);
+    padding: 3rem 2rem 2rem;
+    animation: answerSlideIn 0.5s ease;
+}
+
+.answer-display.hidden {
+    display: none;
+}
+
+@keyframes answerSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.answer-content {
+    background: var(--bg-card);
+    padding: 1.5rem 2rem;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    border: 2px solid var(--success-color);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+}
+
+.answer-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.answer-actions .btn {
+    min-width: 140px;
+}
+
+#btn-next-game:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.answer-content h2 {
+    font-size: 1.25rem;
+    color: var(--success-color);
+    margin-bottom: 0.5rem;
+}
+
+.answer-text {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+/* Game Controls */
+.game-controls {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    margin-top: 1rem;
+}
+
+.control-group {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.control-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: var(--bg-darker);
+    color: var(--text-primary);
+}
+
+.control-btn:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-reset:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.btn-random:hover {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+.btn-reveal:hover {
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.btn-giveup:hover {
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+/* Tile Input */
+.tile-input-group {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.tile-input {
+    width: 200px;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.tile-input::-webkit-inner-spin-button,
+.tile-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Keyboard Shortcuts */
+.keyboard-shortcuts {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.shortcut {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Fullscreen Button */
+.fullscreen-btn {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    z-index: 100;
+}
+
+.fullscreen-btn:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-card-hover);
+}
+
+/* Back Link */
+.back-link {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    transition: all var(--transition-fast);
+    z-index: 100;
+}
+
+.back-link:hover {
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+/* Grid Size Classes */
+.game-board.grid-6 {
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+}
+
+.game-board.grid-8 {
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+}
+
+.game-board.grid-10 {
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+}
+
+/* Fullscreen Mode */
+.game-body:fullscreen .game-container,
+.game-body:-webkit-full-screen .game-container {
+    padding: 2rem;
+}
+
+.game-body:fullscreen .game-board,
+.game-body:-webkit-full-screen .game-board {
+    max-width: min(75vh, 90vw);
+    max-height: 75vh;
+}
+
+/* Responsive Adjustments */
+
+/* Extra small devices (phones, 320px and up) */
+@media (max-width: 480px) {
+    .game-container {
+        padding: 0.5rem;
+    }
+    
+    .game-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .game-title h1 {
+        font-size: 1.1rem;
+    }
+    
+    .game-icon {
+        font-size: 1.5rem;
+    }
+    
+    .game-stats {
+        gap: 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .stat-value {
+        font-size: 1.1rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .game-board {
+        max-width: 95vw;
+        max-height: 50vh;
+        border-width: 2px;
+    }
+    
+    .game-board-wrapper {
+        padding: 0.25rem;
+    }
+    
+    .tile {
+        font-size: clamp(0.5rem, 3vw, 1rem);
+    }
+    
+    .game-controls {
+        padding: 0.5rem;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .control-group {
+        gap: 0.35rem;
+    }
+    
+    .control-btn {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.8rem;
+        gap: 0.25rem;
+    }
+    
+    .control-btn .btn-text {
+        display: none;
+    }
+    
+    .control-btn .btn-icon {
+        font-size: 1rem;
+    }
+    
+    .tile-input-group {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .tile-input {
+        width: 100%;
+        max-width: 150px;
+        font-size: 1rem;
+        padding: 0.5rem;
+    }
+    
+    .keyboard-shortcuts {
+        display: none;
+    }
+    
+    .fullscreen-btn {
+        width: 36px;
+        height: 36px;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+    
+    .back-link {
+        top: 0.5rem;
+        left: 0.5rem;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+    }
+    
+    .answer-display {
+        padding: 1.5rem 0.75rem 0.75rem;
+    }
+    
+    .answer-content {
+        padding: 1rem;
+    }
+    
+    .answer-content h2 {
+        font-size: 1rem;
+    }
+    
+    .answer-text {
+        font-size: 1.5rem;
+    }
+    
+    .answer-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .answer-actions .btn {
+        width: 100%;
+        min-width: auto;
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* Small devices (phones landscape, 481px to 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .game-container {
+        padding: 0.75rem;
+    }
+    
+    .game-board {
+        max-width: min(65vw, 60vh);
+        max-height: 55vh;
+    }
+    
+    .control-btn .btn-text {
+        display: none;
+    }
+    
+    .tile-input {
+        width: 150px;
+    }
+}
+
+/* Medium devices (tablets, 768px and below) */
+@media (max-width: 768px) {
+    .game-header {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+    }
+    
+    .game-stats {
+        gap: 1.5rem;
+    }
+    
+    .control-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .control-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .tile-input {
+        width: 140px;
+    }
+    
+    .keyboard-shortcuts {
+        display: none;
+    }
+    
+    .back-link span::before {
+        content: '←';
+    }
+    
+    .back-link span {
+        font-size: 0;
+    }
+}
+
+/* Landscape orientation for phones */
+@media (max-height: 500px) and (orientation: landscape) {
+    .game-container {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .game-header {
+        padding: 0.35rem 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .game-title h1 {
+        font-size: 1rem;
+    }
+    
+    .game-board {
+        max-height: 60vh;
+        max-width: 60vh;
+    }
+    
+    .game-controls {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.35rem 0.75rem;
+        margin-top: 0.25rem;
+    }
+    
+    .control-group,
+    .tile-input-group {
+        gap: 0.35rem;
+    }
+    
+    .control-btn {
+        padding: 0.35rem 0.5rem;
+    }
+    
+    .control-btn .btn-text {
+        display: none;
+    }
+}
+
+/* Touch-friendly for mobile */
+@media (hover: none) and (pointer: coarse) {
+    .tile {
+        min-width: 30px;
+        min-height: 30px;
+    }
+    
+    .control-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .tile-input {
+        min-height: 44px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+
+@media (min-width: 1920px) {
+    .game-board {
+        max-width: 900px;
+        max-height: 900px;
+    }
+    
+    .tile {
+        font-size: 2rem;
+    }
+    
+    .answer-text {
+        font-size: 3.5rem;
+    }
+}

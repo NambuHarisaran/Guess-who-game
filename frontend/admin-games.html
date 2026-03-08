@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#020617">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>All Games - Stage Guess Reveal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+</head>
+<body>
+    <!-- Admin Container -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="logo-icon">🎭</span>
+                <h2>Admin Panel</h2>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/admin/create" class="nav-item">
+                    <span class="nav-icon">➕</span>
+                    <span>Create Game</span>
+                </a>
+                <a href="/admin/games" class="nav-item active">
+                    <span class="nav-icon">🎮</span>
+                    <span>All Games</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Back to Home</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="header-content">
+                    <div>
+                        <h1>All Games</h1>
+                        <p>Manage your reveal games</p>
+                    </div>
+                    <a href="/admin/create" class="btn btn-primary">
+                        <span>➕ Create New Game</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Filter & Search -->
+            <section class="filter-section">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder="Search games...">
+                </div>
+                <div class="filter-options">
+                    <select id="filter-grid">
+                        <option value="">All Grid Sizes</option>
+                        <option value="6">6×6</option>
+                        <option value="8">8×8</option>
+                        <option value="10">10×10</option>
+                    </select>
+                    <select id="sort-by">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="name">By Name</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Games Grid -->
+            <section class="games-section">
+                <div id="games-grid" class="games-grid">
+                    <!-- Games will be loaded dynamically -->
+                    <div class="loading-placeholder">
+                        <div class="loader"></div>
+                        <p>Loading games...</p>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state hidden">
+                    <span class="empty-icon">🎮</span>
+                    <h3>No Games Yet</h3>
+                    <p>Create your first reveal game to get started!</p>
+                    <a href="/admin/create" class="btn btn-primary">Create Game</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Delete Game?</h3>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete "<span id="delete-game-title"></span>"?</p>
+                <p class="warning">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-delete" class="btn btn-secondary">Cancel</button>
+                <button id="btn-confirm-delete" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="/js/admin-games.js"></script>
+</body>
+</html>
