@@ -24,7 +24,7 @@ The application includes:
 
 - **Frontend**: HTML, CSS, JavaScript (Vanilla)
 - **Backend**: Node.js with Express
-- **Database**: JSON file storage
+- **Database**: Supabase (PostgreSQL)
 - **Image Storage**: Cloudinary (persistent cloud storage)
 - **File Upload**: Multer for image handling
 
@@ -37,22 +37,46 @@ The application includes:
    npm install
    ```
 
-3. **Set up Cloudinary** (required for image uploads)
+3. **Set up Supabase** (required for database)
+   - Create a free account at [supabase.com](https://supabase.com)
+   - Create a new project
+   - Go to SQL Editor and run this query to create the games table:
+   ```sql
+   CREATE TABLE games (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     title TEXT NOT NULL,
+     image TEXT NOT NULL,
+     grid_size INTEGER NOT NULL DEFAULT 6,
+     answer TEXT NOT NULL,
+     revealed_tiles JSONB DEFAULT '[]',
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW()
+   );
+   
+   ALTER TABLE games ENABLE ROW LEVEL SECURITY;
+   CREATE POLICY "Allow all" ON games FOR ALL USING (true);
+   ```
+   - Go to Settings → API and copy your URL and anon key
+
+4. **Set up Cloudinary** (required for image uploads)
    - Create a free account at [cloudinary.com](https://cloudinary.com)
    - Go to your Dashboard and copy your credentials
-   - Create a `.env` file in the project root:
+
+5. **Create a `.env` file** in the project root:
    ```env
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
-4. **Start the server**
+6. **Start the server**
    ```bash
    npm start
    ```
 
-5. **Open in browser**
+7. **Open in browser**
    ```
    http://localhost:3000
    ```
@@ -65,6 +89,8 @@ The application includes:
    - `CLOUDINARY_CLOUD_NAME`
    - `CLOUDINARY_API_KEY`
    - `CLOUDINARY_API_SECRET`
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
 4. Deploy!
 
 ## Project Structure

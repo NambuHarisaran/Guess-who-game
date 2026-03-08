@@ -4,69 +4,41 @@
  * Handles all business logic for game management:
  * - CRUD operations for games
  * - Cloudinary image storage
- * - In-memory fallback for serverless environments
+ * - Supabase database for persistent storage
  */
 
-const fs = require('fs');
-const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { uploadImage, deleteImage } = require('../config/cloudinary');
-
-// Path to games data file
-const GAMES_FILE = path.join(__dirname, '../data/games.json');
-
-// In-memory cache for serverless environments
-let gamesCache = null;
-
-/**
- * Helper function to read games from JSON file or cache
- * @returns {Array} Array of game objects
- */
-const readGames = () => {
-    // Try to read from file first
-    try {
-        const data = fs.readFileSync(GAMES_FILE, 'utf8');
-        const games = JSON.parse(data);
-        gamesCache = games; // Update cache
-        return games;
-    } catch (error) {
-        console.log('Using in-memory cache (filesystem unavailable)');
-        // Return cache if file read fails
-        if (gamesCache !== null) {
-            return gamesCache;
-        }
-        return [];
-    }
-};
-
-/**
- * Helper function to write games to JSON file or cache
- * @param {Array} games - Array of game objects to save
- */
-const writeGames = (games) => {
-    // Always update cache
-    gamesCache = games;
-    
-    // Try to write to file (will fail on Vercel but that's ok)
-    try {
-        fs.writeFileSync(GAMES_FILE, JSON.stringify(games, null, 2));
-    } catch (error) {
-        console.log('Filesystem write failed, using in-memory cache only');
-        // On serverless, we rely on the cache
-    }
-};
-
-
+const { supabase } = require('../config/supabase');
 
 /**
  * Get all games
  * GET /api/games
  */
-exports.getAllGames = (req, res) => {
+exports.getAllGames = async (req, res) => {
     try {
-        const games = readGames();
+        const { data, error } = await supabase
+            .from('games')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        // Transform snake_case to camelCase for frontend
+        const games = data.map(game => ({
+            id: game.id,
+            title: game.title,
+            image: game.image,
+            gridSize: game.grid_size,
+            answer: game.answer,
+            revealedTiles: game.revealed_tiles || [],
+            createdAt: game.created_at,
+            updatedAt: game.updated_at
+        }));
+        
         res.json(games);
     } catch (error) {
+        console.error('Error fetching games:', error);
         res.status(500).json({ error: 'Failed to retrieve games' });
     }
 };
@@ -75,17 +47,36 @@ exports.getAllGames = (req, res) => {
  * Get a specific game by ID
  * GET /api/games/:id
  */
-exports.getGameById = (req, res) => {
+exports.getGameById = async (req, res) => {
     try {
-        const games = readGames();
-        const game = games.find(g => g.id === req.params.id);
+        const { data, error } = await supabase
+            .from('games')
+            .select('*')
+            .eq('id', req.params.id)
+            .single();
         
-        if (!game) {
-            return res.status(404).json({ error: 'Game not found' });
+        if (error) {
+            if (error.code === 'PGRST116') {
+                return res.status(404).json({ error: 'Game not found' });
+            }
+            throw error;
         }
+        
+        // Transform to camelCase
+        const game = {
+            id: data.id,
+            title: data.title,
+            image: data.image,
+            gridSize: data.grid_size,
+            answer: data.answer,
+            revealedTiles: data.revealed_tiles || [],
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+        };
         
         res.json(game);
     } catch (error) {
+        console.error('Error fetching game:', error);
         res.status(500).json({ error: 'Failed to retrieve game' });
     }
 };
@@ -96,7 +87,6 @@ exports.getGameById = (req, res) => {
  * 
  * Request body (multipart/form-data):
  * - image: Image file
- * - imageData: Base64 string (alternative to file)
  * - gridSize: Number (6, 8, or 10)
  * - answer: String (correct answer)
  * - title: String (optional game title)
@@ -131,21 +121,31 @@ exports.createGame = async (req, res) => {
             return res.status(500).json({ error: 'Failed to upload image' });
         }
         
-        // Create new game object
-        const newGame = {
-            id: uuidv4(),
-            title: title || `Game ${Date.now()}`,
-            image: imageUrl,
-            gridSize: parsedGridSize,
-            answer: answer.trim(),
-            createdAt: new Date().toISOString(),
-            revealedTiles: []
-        };
+        // Insert into Supabase
+        const { data, error } = await supabase
+            .from('games')
+            .insert({
+                title: title || `Game ${Date.now()}`,
+                image: imageUrl,
+                grid_size: parsedGridSize,
+                answer: answer.trim(),
+                revealed_tiles: []
+            })
+            .select()
+            .single();
         
-        // Save game to file
-        const games = readGames();
-        games.push(newGame);
-        writeGames(games);
+        if (error) throw error;
+        
+        // Transform to camelCase for response
+        const newGame = {
+            id: data.id,
+            title: data.title,
+            image: data.image,
+            gridSize: data.grid_size,
+            answer: data.answer,
+            revealedTiles: data.revealed_tiles || [],
+            createdAt: data.created_at
+        };
         
         res.status(201).json(newGame);
     } catch (error) {
@@ -160,33 +160,44 @@ exports.createGame = async (req, res) => {
  */
 exports.updateGame = async (req, res) => {
     try {
-        const games = readGames();
-        const gameIndex = games.findIndex(g => g.id === req.params.id);
+        // First get the existing game
+        const { data: existingGame, error: fetchError } = await supabase
+            .from('games')
+            .select('*')
+            .eq('id', req.params.id)
+            .single();
         
-        if (gameIndex === -1) {
-            return res.status(404).json({ error: 'Game not found' });
+        if (fetchError) {
+            if (fetchError.code === 'PGRST116') {
+                return res.status(404).json({ error: 'Game not found' });
+            }
+            throw fetchError;
         }
         
         const { gridSize, answer, title, revealedTiles } = req.body;
         
-        // Update game fields
-        if (title) games[gameIndex].title = title;
-        if (answer) games[gameIndex].answer = answer.trim();
+        // Build update object
+        const updates = {
+            updated_at: new Date().toISOString()
+        };
+        
+        if (title) updates.title = title;
+        if (answer) updates.answer = answer.trim();
         if (gridSize) {
             const parsedGridSize = parseInt(gridSize);
             if ([6, 8, 10].includes(parsedGridSize)) {
-                games[gameIndex].gridSize = parsedGridSize;
+                updates.grid_size = parsedGridSize;
             }
         }
         
         // Update revealed tiles if provided
         if (revealedTiles !== undefined) {
             try {
-                games[gameIndex].revealedTiles = typeof revealedTiles === 'string' 
+                updates.revealed_tiles = typeof revealedTiles === 'string' 
                     ? JSON.parse(revealedTiles) 
                     : revealedTiles;
             } catch (e) {
-                games[gameIndex].revealedTiles = revealedTiles;
+                updates.revealed_tiles = revealedTiles;
             }
         }
         
@@ -194,20 +205,39 @@ exports.updateGame = async (req, res) => {
         if (req.file) {
             try {
                 // Delete old image from Cloudinary
-                if (games[gameIndex].image && games[gameIndex].image.includes('cloudinary')) {
-                    await deleteImage(games[gameIndex].image);
+                if (existingGame.image && existingGame.image.includes('cloudinary')) {
+                    await deleteImage(existingGame.image);
                 }
                 // Upload new image
-                games[gameIndex].image = await uploadImage(req.file.buffer, req.file.mimetype);
+                updates.image = await uploadImage(req.file.buffer, req.file.mimetype);
             } catch (e) {
                 console.error('Error updating image on Cloudinary:', e);
             }
         }
         
-        games[gameIndex].updatedAt = new Date().toISOString();
-        writeGames(games);
+        // Update in Supabase
+        const { data, error } = await supabase
+            .from('games')
+            .update(updates)
+            .eq('id', req.params.id)
+            .select()
+            .single();
         
-        res.json(games[gameIndex]);
+        if (error) throw error;
+        
+        // Transform to camelCase
+        const updatedGame = {
+            id: data.id,
+            title: data.title,
+            image: data.image,
+            gridSize: data.grid_size,
+            answer: data.answer,
+            revealedTiles: data.revealed_tiles || [],
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+        };
+        
+        res.json(updatedGame);
     } catch (error) {
         console.error('Error updating game:', error);
         res.status(500).json({ error: 'Failed to update game' });
@@ -220,23 +250,34 @@ exports.updateGame = async (req, res) => {
  */
 exports.deleteGame = async (req, res) => {
     try {
-        const games = readGames();
-        const gameIndex = games.findIndex(g => g.id === req.params.id);
+        // First get the game to delete its image
+        const { data: game, error: fetchError } = await supabase
+            .from('games')
+            .select('*')
+            .eq('id', req.params.id)
+            .single();
         
-        if (gameIndex === -1) {
-            return res.status(404).json({ error: 'Game not found' });
+        if (fetchError) {
+            if (fetchError.code === 'PGRST116') {
+                return res.status(404).json({ error: 'Game not found' });
+            }
+            throw fetchError;
         }
         
         // Delete image from Cloudinary
-        if (games[gameIndex].image && games[gameIndex].image.includes('cloudinary')) {
-            await deleteImage(games[gameIndex].image);
+        if (game.image && game.image.includes('cloudinary')) {
+            await deleteImage(game.image);
         }
         
-        // Remove game from array
-        const deletedGame = games.splice(gameIndex, 1)[0];
-        writeGames(games);
+        // Delete from Supabase
+        const { error } = await supabase
+            .from('games')
+            .delete()
+            .eq('id', req.params.id);
         
-        res.json({ message: 'Game deleted successfully', game: deletedGame });
+        if (error) throw error;
+        
+        res.json({ message: 'Game deleted successfully', game });
     } catch (error) {
         console.error('Error deleting game:', error);
         res.status(500).json({ error: 'Failed to delete game' });
