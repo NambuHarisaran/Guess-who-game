@@ -25,6 +25,7 @@ The application includes:
 - **Frontend**: HTML, CSS, JavaScript (Vanilla)
 - **Backend**: Node.js with Express
 - **Database**: JSON file storage
+- **Image Storage**: Cloudinary (persistent cloud storage)
 - **File Upload**: Multer for image handling
 
 ## Installation
@@ -36,15 +37,35 @@ The application includes:
    npm install
    ```
 
-3. **Start the server**
+3. **Set up Cloudinary** (required for image uploads)
+   - Create a free account at [cloudinary.com](https://cloudinary.com)
+   - Go to your Dashboard and copy your credentials
+   - Create a `.env` file in the project root:
+   ```env
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   ```
+
+4. **Start the server**
    ```bash
    npm start
    ```
 
-4. **Open in browser**
+5. **Open in browser**
    ```
    http://localhost:3000
    ```
+
+## Deployment (Vercel)
+
+1. Push your code to GitHub
+2. Import the project in Vercel
+3. Add Environment Variables in Vercel dashboard:
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+4. Deploy!
 
 ## Project Structure
 

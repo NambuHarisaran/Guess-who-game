@@ -17,18 +17,8 @@ const { v4: uuidv4 } = require('uuid');
 
 const gameController = require('../controllers/gameController');
 
-// Configure multer for image upload
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '../../uploads'));
-    },
-    filename: (req, file, cb) => {
-        // Generate unique filename with original extension
-        const ext = path.extname(file.originalname);
-        const filename = `${uuidv4()}${ext}`;
-        cb(null, filename);
-    }
-});
+// Configure multer for memory storage (Vercel-compatible)
+const storage = multer.memoryStorage();
 
 // File filter to only allow images
 const fileFilter = (req, file, cb) => {

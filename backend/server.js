@@ -4,9 +4,12 @@
  * This Express server handles:
  * - Serving static frontend files
  * - REST API for game management (CRUD operations)
- * - Image upload handling
+ * - Cloudinary image upload handling
  * - Game state management
  */
+
+// Load environment variables first
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
