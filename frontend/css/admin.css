@@ -341,6 +341,7 @@
     max-height: 300px;
     border-radius: var(--radius-sm);
     object-fit: contain;
+    filter: blur(20px);
 }
 
 .image-preview.hidden {
@@ -433,6 +434,13 @@
     font-size: 0.75rem;
     color: var(--text-muted);
     border-radius: 2px;
+}
+
+.grid-preview .preview-tile img.tile-logo {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+    opacity: 0.7;
 }
 
 /* Filter Section */
