@@ -40,9 +40,22 @@ function initCreateGame() {
  * Setup image upload functionality
  */
 function setupImageUpload() {
-    // Click to upload
-    elements.uploadArea.addEventListener('click', () => {
-        elements.imageInput.click();
+    // Click to upload - only trigger if click is NOT on the file input itself
+    elements.uploadArea.addEventListener('click', (e) => {
+        // Prevent double trigger - only click if target is not the file input
+        if (e.target !== elements.imageInput) {
+            e.preventDefault();
+            e.stopPropagation();
+            elements.imageInput.click();
+        }
+    });
+    
+    // Touch support for mobile
+    elements.uploadArea.addEventListener('touchend', (e) => {
+        if (e.target !== elements.imageInput) {
+            e.preventDefault();
+            elements.imageInput.click();
+        }
     });
     
     // File selected
