@@ -3,22 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#020617">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>All Games - Stage Guess Reveal</title>
+    <meta name="theme-color" content="#030712">
+    <title>All Games Hub - Stage Guess Reveal</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/admin.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap">
 </head>
 <body>
-    <!-- Admin Container -->
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="admin-sidebar">
+        <!-- Mobile Drawer Overlay -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+        <!-- Glassmorphic Sidebar -->
+        <aside class="admin-sidebar" id="admin-sidebar">
             <div class="sidebar-header">
-                <span class="logo-icon">🎭</span>
-                <h2>Admin Panel</h2>
+                <div class="sidebar-brand">
+                    <span class="logo-icon">🎭</span>
+                    <div>
+                        <h2>Stage Admin</h2>
+                        <span class="badge-stage">Reveal Engine</span>
+                    </div>
+                </div>
+                <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Close menu">&times;</button>
             </div>
             
             <nav class="sidebar-nav">
@@ -27,77 +33,104 @@
                     <span>Dashboard</span>
                 </a>
                 <a href="/admin/create" class="nav-item">
-                    <span class="nav-icon">➕</span>
-                    <span>Create Game</span>
+                    <span class="nav-icon">✨</span>
+                    <span>Create Studio</span>
                 </a>
                 <a href="/admin/games" class="nav-item active">
                     <span class="nav-icon">🎮</span>
                     <span>All Games</span>
                 </a>
+                <a href="/" class="nav-item" target="_blank">
+                    <span class="nav-icon">🚀</span>
+                    <span>Open Stage Board</span>
+                </a>
             </nav>
 
             <div class="sidebar-footer">
-                <a href="/" class="nav-item">
-                    <span class="nav-icon">🏠</span>
-                    <span>Back to Home</span>
-                </a>
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    <span>Local Storage Active</span>
+                </div>
             </div>
         </aside>
 
         <!-- Main Content -->
         <main class="admin-main">
-            <header class="admin-header">
-                <div class="header-content">
-                    <div>
-                        <h1>All Games</h1>
-                        <p>Manage your reveal games</p>
-                    </div>
-                    <a href="/admin/create" class="btn btn-primary">
-                        <span>➕ Create New Game</span>
+            <!-- Topbar -->
+            <div class="admin-topbar">
+                <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <div class="topbar-title">
+                    <h1>Games Management Hub</h1>
+                    <p>Search, launch, copy stage links, reset progress, or edit rounds</p>
+                </div>
+                <div class="topbar-actions">
+                    <a href="/admin/create" class="btn btn-primary btn-glow">
+                        <span class="btn-icon">✨</span> Create New Game
                     </a>
                 </div>
-            </header>
+            </div>
 
-            <!-- Filter & Search -->
-            <section class="filter-section">
-                <div class="search-box">
+            <!-- Filter & Search Toolbar -->
+            <section class="toolbar-glass glass-card">
+                <div class="search-field">
                     <span class="search-icon">🔍</span>
-                    <input type="text" id="search-input" placeholder="Search games...">
+                    <input type="text" id="search-input" placeholder="Search by game title or answer...">
                 </div>
-                <div class="filter-options">
+                <div class="filter-group">
+                    <button id="btn-toggle-all-images" class="btn btn-secondary btn-small" title="Toggle Artwork Visibility for All Games">
+                        <span>👁️ Reveal All Artwork</span>
+                    </button>
                     <select id="filter-grid">
                         <option value="">All Grid Sizes</option>
-                        <option value="6">6×6</option>
-                        <option value="8">8×8</option>
-                        <option value="10">10×10</option>
+                        <option value="6">6×6 (36 Tiles)</option>
+                        <option value="8">8×8 (64 Tiles)</option>
+                        <option value="10">10×10 (100 Tiles)</option>
                     </select>
                     <select id="sort-by">
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
-                        <option value="name">By Name</option>
+                        <option value="name">Alphabetical</option>
                     </select>
                 </div>
             </section>
 
             <!-- Games Grid -->
-            <section class="games-section">
-                <div id="games-grid" class="games-grid">
-                    <!-- Games will be loaded dynamically -->
-                    <div class="loading-placeholder">
-                        <div class="loader"></div>
-                        <p>Loading games...</p>
-                    </div>
-                </div>
-
-                <!-- Empty State -->
-                <div id="empty-state" class="empty-state hidden">
-                    <span class="empty-icon">🎮</span>
-                    <h3>No Games Yet</h3>
-                    <p>Create your first reveal game to get started!</p>
-                    <a href="/admin/create" class="btn btn-primary">Create Game</a>
+            <section class="games-grid-container" id="games-grid">
+                <!-- Rendered dynamically via admin-games.js -->
+                <div class="empty-state">
+                    <span class="empty-icon">⏳</span>
+                    <h3>Loading games...</h3>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Quick Edit Modal -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Edit Game</h3>
+                <button class="modal-close" id="btn-close-edit">&times;</button>
+            </div>
+            <form id="edit-game-form">
+                <input type="hidden" id="edit-game-id">
+                <div class="form-group">
+                    <label for="edit-game-title">Game Title</label>
+                    <input type="text" id="edit-game-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-game-answer">Secret Answer</label>
+                    <input type="text" id="edit-game-answer" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-edit">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
@@ -106,14 +139,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Delete Game?</h3>
+                <button class="modal-close" id="btn-close-delete">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete "<span id="delete-game-title"></span>"?</p>
-                <p class="warning">This action cannot be undone.</p>
+                <p>Are you sure you want to permanently delete "<strong id="delete-game-title"></strong>"?</p>
+                <p style="color: var(--brand-rose); font-size: 0.85rem; margin-top: 0.5rem;">This will permanently remove the game data and image file.</p>
             </div>
             <div class="modal-footer">
                 <button id="btn-cancel-delete" class="btn btn-secondary">Cancel</button>
-                <button id="btn-confirm-delete" class="btn btn-danger">Delete</button>
+                <button id="btn-confirm-delete" class="btn btn-danger">Yes, Delete Game</button>
             </div>
         </div>
     </div>

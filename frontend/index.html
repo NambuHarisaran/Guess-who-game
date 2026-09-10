@@ -3,82 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0f172a">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Stage Guess Reveal Game</title>
+    <meta name="theme-color" content="#030712">
+    <title>Stage Guess Reveal Game - Live Visual Quiz Engine</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap">
 </head>
 <body>
-    <!-- Main Landing Page -->
-    <div class="landing-container">
-        <!-- Animated background -->
-        <div class="bg-animation">
-            <div class="bg-circle"></div>
-            <div class="bg-circle"></div>
-            <div class="bg-circle"></div>
-        </div>
+    <!-- Aurora Ambient Mesh Background -->
+    <div class="aurora-background">
+        <div class="aurora-glow-1"></div>
+        <div class="aurora-glow-2"></div>
+        <div class="aurora-glow-3"></div>
+    </div>
 
+    <!-- Main Landing Container -->
+    <div class="landing-container">
         <!-- Header -->
         <header class="landing-header">
             <div class="logo">
                 <span class="logo-icon">🎭</span>
                 <h1>Stage Guess Reveal</h1>
             </div>
+            <div class="nav-tag">
+                <span class="nav-tag-dot"></span>
+                <span>Stage Broadcast Ready</span>
+            </div>
         </header>
 
         <!-- Hero Section -->
         <main class="landing-main">
-            <div class="hero-content">
-                <h2 class="hero-title">The Ultimate Quiz Game</h2>
-                <p class="hero-subtitle">
-                    Host exciting reveal games where audiences guess hidden images 
-                    by uncovering numbered tiles one by one!
-                </p>
-                
-                <div class="action-buttons">
-                    <a href="/admin" class="btn btn-primary btn-large">
-                        <span class="btn-icon">⚙️</span>
-                        Admin Dashboard
-                    </a>
-                    <a href="/admin/games" class="btn btn-secondary btn-large">
-                        <span class="btn-icon">🎮</span>
-                        View Games
-                    </a>
+            <div class="hero-split">
+                <!-- Left Hero Content -->
+                <div class="hero-content">
+                    <div class="hero-pill">
+                        <span>⚡ Live Audience Reveal Engine</span>
+                    </div>
+                    <h2 class="hero-title">Uncover The Mystery. One Tile At A Time.</h2>
+                    <p class="hero-subtitle">
+                        Host high-stakes visual reveal quiz shows on projectors and large screens. 
+                        Let contestants call out numbers as hidden images emerge!
+                    </p>
+                    
+                    <div class="hero-actions">
+                        <a href="/admin/create" class="btn btn-primary btn-large btn-shimmer">
+                            <span class="btn-icon">✨</span>
+                            Create New Game
+                        </a>
+                        <a href="/admin/games" class="btn btn-secondary btn-large">
+                            <span class="btn-icon">🎮</span>
+                            Browse Games
+                        </a>
+                        <a href="/admin" class="btn btn-secondary btn-large">
+                            <span class="btn-icon">📊</span>
+                            Admin Dashboard
+                        </a>
+                    </div>
+
+                    <div class="hero-specs">
+                        <div class="hero-spec-item">
+                            <span>📺</span> 1080p / 4K Optimized
+                        </div>
+                        <div class="hero-spec-item">
+                            <span>🔊</span> Synthesized Audio
+                        </div>
+                        <div class="hero-spec-item">
+                            <span>⌨️</span> Host Keypad Controls
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Hero Interactive Demo -->
+                <div class="hero-preview-container">
+                    <div class="hero-preview-header">
+                        <div class="hero-preview-title">
+                            <span>🎯</span>
+                            <span>Interactive Live Preview</span>
+                        </div>
+                        <span id="preview-status-count" class="preview-badge-status">9 left</span>
+                    </div>
+
+                    <div id="hero-preview-board" class="preview-board">
+                        <!-- Rendered by landing-demo.js -->
+                    </div>
+
+                    <div class="hero-preview-footer">
+                        <span>Click tiles to test reveal effect</span>
+                        <button id="preview-reset-btn" class="preview-reset-btn">↺ Reset Demo</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Features -->
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🖼️</div>
-                    <h3>Upload Images</h3>
-                    <p>Add any image to create a new guessing challenge</p>
+            <!-- Features Grid -->
+            <section class="features-section">
+                <div class="section-header-center">
+                    <h2>Engineered For Live Stage Events</h2>
+                    <p>Everything you need for an unforgettable quiz experience</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔢</div>
-                    <h3>Numbered Tiles</h3>
-                    <p>6×6, 8×8, or 10×10 grid options available</p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon-wrap">🖼️</div>
+                        <h3>Instant Artwork Upload</h3>
+                        <p>Upload any high-res photo with live interactive grid overlay preview before hosting.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrap">🔢</div>
+                        <h3>Adaptive Grid Layouts</h3>
+                        <p>Select from 6×6 (36 tiles), 8×8 (64 tiles), or 10×10 (100 tiles) to calibrate quiz difficulty.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrap">🔊</div>
+                        <h3>Built-in Audio & FX</h3>
+                        <p>Dynamic chimes, roulette spins, tension countdown alarms, and victory fanfares.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrap">⏱️</div>
+                        <h3>Host Stage Tools</h3>
+                        <p>Countdown timer, host ghosting peek mode, and clean projector presentation HUD.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Interactive Reveal</h3>
-                    <p>Click or call numbers to reveal parts of the image</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📺</div>
-                    <h3>Projector Ready</h3>
-                    <p>Optimized for 1920×1080 stage displays</p>
-                </div>
-            </div>
+            </section>
         </main>
 
         <!-- Footer -->
         <footer class="landing-footer">
-            <p>Perfect for live events, quiz shows, and game nights</p>
+            <p>Stage Guess Reveal Game &bull; Built for live quiz shows, conferences, and event hosting</p>
         </footer>
     </div>
+
+    <script src="js/landing-demo.js"></script>
 </body>
 </html>

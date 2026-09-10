@@ -1,132 +1,123 @@
 /**
- * Stage Guess Reveal Game - Admin Dashboard
- * 
- * Handles:
- * - Loading and displaying dashboard statistics
- * - Showing recent games
+ * Stage Guess Reveal Game - Admin Dashboard Controller
  */
 
 // DOM Elements
 const elements = {
     totalGames: document.getElementById('total-games'),
     totalImages: document.getElementById('total-images'),
+    activeGames: document.getElementById('active-games'),
     recentGame: document.getElementById('recent-game'),
-    recentGamesList: document.getElementById('recent-games-list')
+    quickLaunchList: document.getElementById('quick-launch-list'),
+    hamburgerBtn: document.getElementById('hamburger-btn'),
+    drawerCloseBtn: document.getElementById('drawer-close-btn'),
+    adminSidebar: document.getElementById('admin-sidebar'),
+    sidebarBackdrop: document.getElementById('sidebar-backdrop')
 };
 
 /**
- * Initialize the admin dashboard
+ * Initialize Dashboard
  */
 async function initDashboard() {
+    setupMobileDrawer();
+    await loadDashboardStats();
+}
+
+/**
+ * Setup mobile drawer
+ */
+function setupMobileDrawer() {
+    const openDrawer = () => {
+        elements.adminSidebar?.classList.add('drawer-open');
+        elements.sidebarBackdrop?.classList.add('active');
+    };
+
+    const closeDrawer = () => {
+        elements.adminSidebar?.classList.remove('drawer-open');
+        elements.sidebarBackdrop?.classList.remove('active');
+    };
+
+    elements.hamburgerBtn?.addEventListener('click', openDrawer);
+    elements.drawerCloseBtn?.addEventListener('click', closeDrawer);
+    elements.sidebarBackdrop?.addEventListener('click', closeDrawer);
+}
+
+/**
+ * Load dashboard statistics and games
+ */
+async function loadDashboardStats() {
     try {
         const response = await fetch('/api/games');
         const games = await response.json();
-        
+
         // Update stats
-        elements.totalGames.textContent = games.length;
-        elements.totalImages.textContent = games.length;
-        
-        // Get most recent game
+        if (elements.totalGames) elements.totalGames.textContent = games.length;
+        if (elements.totalImages) elements.totalImages.textContent = games.length;
+
+        const activeCount = games.filter(g => (g.revealedTiles && g.revealedTiles.length > 0 && g.revealedTiles.length < (g.gridSize * g.gridSize))).length;
+        if (elements.activeGames) elements.activeGames.textContent = activeCount;
+
         if (games.length > 0) {
-            const sorted = games.sort((a, b) => 
-                new Date(b.createdAt) - new Date(a.createdAt)
-            );
-            elements.recentGame.textContent = sorted[0].title.substring(0, 15) + 
-                (sorted[0].title.length > 15 ? '...' : '');
-            
-            // Render recent games (last 5)
-            renderRecentGames(sorted.slice(0, 5));
+            const sorted = [...games].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            if (elements.recentGame) {
+                elements.recentGame.textContent = sorted[0].title.length > 16 
+                    ? sorted[0].title.substring(0, 16) + '...' 
+                    : sorted[0].title;
+            }
+
+            renderQuickLaunch(sorted);
         } else {
-            elements.recentGame.textContent = 'None';
-            elements.recentGamesList.innerHTML = `
-                <div class="empty-state" style="padding: 2rem;">
-                    <span class="empty-icon">🎮</span>
-                    <h3>No Games Yet</h3>
-                    <p>Create your first game to get started!</p>
-                    <a href="/admin/create" class="btn btn-primary">Create Game</a>
-                </div>
-            `;
+            if (elements.recentGame) elements.recentGame.textContent = 'None';
+            if (elements.quickLaunchList) {
+                elements.quickLaunchList.innerHTML = `
+                    <div class="empty-state" style="padding: 2.5rem; border: none;">
+                        <span class="empty-icon">🎮</span>
+                        <h3>No Games Created Yet</h3>
+                        <p>Create your first reveal quiz game to populate the stage playlist!</p>
+                        <a href="/admin/create" class="btn btn-primary" style="margin-top: 1rem;">✨ Create First Game</a>
+                    </div>
+                `;
+            }
         }
-        
     } catch (error) {
-        console.error('Error loading dashboard:', error);
-        elements.recentGamesList.innerHTML = `
-            <p style="color: var(--danger-color);">Failed to load data</p>
-        `;
+        console.error('Error loading dashboard stats:', error);
     }
 }
 
 /**
- * Render recent games list
- * @param {Array} games - Array of game objects
+ * Render Quick Launch Stage Playlist
  */
-function renderRecentGames(games) {
-    if (games.length === 0) {
-        elements.recentGamesList.innerHTML = '<p>No games found</p>';
-        return;
-    }
-    
-    elements.recentGamesList.innerHTML = games.map(game => `
-        <div class="game-list-item">
-            <div class="game-list-info">
-                <img src="${game.image}" alt="${game.title}" class="game-list-thumb">
-                <div class="game-list-details">
-                    <h4>${escapeHtml(game.title)}</h4>
-                    <p>${game.gridSize}×${game.gridSize} grid • ${formatDate(game.createdAt)}</p>
+function renderQuickLaunch(games) {
+    if (!elements.quickLaunchList) return;
+
+    elements.quickLaunchList.innerHTML = games.map(game => {
+        const totalTiles = game.gridSize * game.gridSize;
+        const revCount = (game.revealedTiles || []).length;
+        const pct = Math.round((revCount / totalTiles) * 100);
+
+        return `
+            <div class="quick-launch-card">
+                <div class="quick-launch-thumb-wrap concealed" onclick="this.classList.toggle('concealed'); this.classList.toggle('revealed');" title="Click to reveal/hide artwork preview">
+                    <img src="${game.image}" alt="${escapeHtml(game.title)}" loading="lazy">
+                    <div class="quick-launch-cover-icon">🎭</div>
                 </div>
+                <div class="quick-launch-info">
+                    <h4>${escapeHtml(game.title)}</h4>
+                    <p>🔲 ${game.gridSize}×${game.gridSize} &bull; ${revCount}/${totalTiles} (${pct}%)</p>
+                </div>
+                <a href="/game/${game.id}" class="btn btn-primary btn-small">
+                    ▶ Play
+                </a>
             </div>
-            <div class="game-list-actions">
-                <a href="/game/${game.id}" class="btn btn-primary btn-small">Play</a>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
-/**
- * Format date string
- * @param {string} dateStr - ISO date string
- * @returns {string} Formatted date
- */
-function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diff = now - date;
-    
-    // Less than a minute
-    if (diff < 60000) {
-        return 'Just now';
-    }
-    
-    // Less than an hour
-    if (diff < 3600000) {
-        const minutes = Math.floor(diff / 60000);
-        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    }
-    
-    // Less than a day
-    if (diff < 86400000) {
-        const hours = Math.floor(diff / 3600000);
-        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    }
-    
-    // Format as date
-    return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-    });
-}
-
-/**
- * Escape HTML to prevent XSS
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
 function escapeHtml(str) {
+    if (!str) return '';
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
 }
 
-// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', initDashboard);

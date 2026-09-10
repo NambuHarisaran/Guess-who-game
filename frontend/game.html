@@ -3,59 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#020617">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Game - Stage Guess Reveal</title>
+    <meta name="theme-color" content="#030712">
+    <title>Stage Guess Reveal - Live Board</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/game.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=JetBrains+Mono:wght@700&display=swap">
 </head>
 <body class="game-body">
+    <!-- Confetti Particle Canvas -->
+    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay">
-        <div class="loader"></div>
-        <p>Loading Game...</p>
+        <div class="loader-pulse"></div>
+        <p class="loading-text">Loading Stage Game...</p>
     </div>
 
-    <!-- Game Container -->
-    <div class="game-container">
-        <!-- Game Header -->
-        <header class="game-header">
-            <div class="game-title">
-                <span class="game-icon">🎭</span>
+    <!-- Top Navigation HUD Bar -->
+    <header id="stage-hud" class="stage-hud">
+        <div class="hud-left">
+            <a href="/admin/games" class="hud-btn back-btn" title="Back to Games List">
+                <span>&larr; Back</span>
+            </a>
+            <div class="game-title-badge">
+                <span class="live-indicator"></span>
                 <h1 id="game-title">Stage Guess Reveal</h1>
             </div>
-            <div class="game-stats">
-                <div class="stat">
-                    <span class="stat-label">Tiles Left:</span>
-                    <span id="tiles-left" class="stat-value">64</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Revealed:</span>
-                    <span id="tiles-revealed" class="stat-value">0</span>
-                </div>
-            </div>
-        </header>
+        </div>
 
-        <!-- Main Game Area -->
-        <main class="game-main">
-            <!-- Game Board -->
-            <div class="game-board-wrapper">
-                <div id="game-board" class="game-board">
-                    <!-- Image and tiles will be rendered here -->
-                </div>
+        <!-- Host Stage Timer Component -->
+        <div class="hud-timer-container">
+            <div class="timer-display-wrap">
+                <svg class="timer-ring" width="40" height="40">
+                    <circle class="timer-ring-bg" stroke="rgba(255,255,255,0.12)" stroke-width="3.5" fill="transparent" r="16" cx="20" cy="20"/>
+                    <circle id="timer-ring-progress" class="timer-ring-progress" stroke="var(--stage-cyan)" stroke-width="3.5" stroke-dasharray="100.5" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" r="16" cx="20" cy="20"/>
+                </svg>
+                <span id="timer-text" class="timer-text">30s</span>
+            </div>
+            <button id="btn-timer-toggle" class="hud-mini-btn" title="Start/Pause Timer (T)">▶</button>
+            <button id="btn-timer-reset" class="hud-mini-btn" title="Reset Timer">↺</button>
+            <select id="timer-preset-select" class="timer-preset-select" title="Preset">
+                <option value="30">30s</option>
+                <option value="60">60s</option>
+                <option value="15">15s</option>
+            </select>
+        </div>
+
+        <!-- Stage Statistics Badges -->
+        <div class="hud-stats">
+            <div class="stat-badge">
+                <span class="stat-badge-label">Left</span>
+                <span id="tiles-left" class="stat-badge-val">64</span>
+            </div>
+            <div class="stat-badge">
+                <span class="stat-badge-label">Revealed</span>
+                <span id="tiles-revealed" class="stat-badge-val">0</span>
+                <span id="tiles-percent" class="stat-badge-sub">(0%)</span>
+            </div>
+        </div>
+
+        <!-- Top Right Action Controls -->
+        <div class="hud-actions">
+            <button id="btn-host-peek" class="hud-btn hud-peek-btn" title="Host Peek Mode (P)">
+                <span class="btn-icon">👁️‍🗨️</span> <span class="btn-lbl">Peek</span>
+            </button>
+            <button id="btn-sound-toggle" class="hud-btn" title="Toggle Sound (M)">
+                <span id="sound-icon" class="btn-icon">🔊</span>
+            </button>
+            <button id="btn-hud-toggle" class="hud-btn" title="Clean Stage Projector Mode (H)">
+                <span class="btn-icon">📺</span>
+            </button>
+            <button id="btn-fullscreen" class="hud-btn" title="Toggle Fullscreen (F)">
+                <span class="btn-icon">⛶</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Board Stage Area -->
+    <main class="game-main">
+        <div class="game-board-glow-wrap">
+            <div id="ambient-glow" class="ambient-glow"></div>
+            <div id="game-board" class="game-board">
+                <!-- Dynamically generated 3D tiles -->
             </div>
 
-            <!-- Answer Display (Hidden until revealed) -->
+            <!-- Dramatic Victory / Answer Reveal Banner -->
             <div id="answer-display" class="answer-display hidden">
-                <div class="answer-content">
-                    <h2>🎉 The Answer Is:</h2>
-                    <p id="answer-text" class="answer-text"></p>
+                <div class="answer-card">
+                    <div class="celebration-badge">🎉 REVEALED ANSWER</div>
+                    <h2 id="answer-text" class="answer-text"></h2>
                     <div class="answer-actions">
                         <button id="btn-play-again" class="btn btn-secondary">
-                            <span class="btn-icon">🔄</span> Play Again
+                            <span class="btn-icon">🔄</span> Replay
                         </button>
                         <button id="btn-next-game" class="btn btn-primary">
                             <span class="btn-icon">➡️</span> Next Game
@@ -63,57 +102,57 @@
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
+    </main>
 
-        <!-- Game Controls -->
-        <footer class="game-controls">
-            <div class="control-group">
-                <button id="btn-reset" class="control-btn btn-reset" title="Reset Game (R)">
-                    <span class="btn-icon">🔄</span>
-                    <span class="btn-text">Reset</span>
-                </button>
-                <button id="btn-random" class="control-btn btn-random" title="Random Tile (Space)">
-                    <span class="btn-icon">🎲</span>
-                    <span class="btn-text">Random</span>
-                </button>
-                <button id="btn-reveal-all" class="control-btn btn-reveal" title="Reveal All">
-                    <span class="btn-icon">👁️</span>
-                    <span class="btn-text">Reveal All</span>
-                </button>
-                <button id="btn-give-up" class="control-btn btn-giveup" title="Give Up">
-                    <span class="btn-icon">🏳️</span>
-                    <span class="btn-text">Give Up</span>
-                </button>
-            </div>
-            
-            <div class="tile-input-group">
-                <input type="number" id="tile-input" class="tile-input" 
-                       placeholder="Enter tile number..." min="1" max="100">
-                <button id="btn-reveal-tile" class="control-btn btn-primary">
-                    <span class="btn-icon">✓</span>
-                    <span class="btn-text">Reveal</span>
-                </button>
-            </div>
+    <!-- Bottom Stage Controls Dock -->
+    <footer id="stage-dock" class="stage-dock">
+        <div class="dock-primary-group">
+            <button id="btn-random" class="dock-btn btn-random" title="Random Tile (Space)">
+                <span class="dock-icon">🎲</span>
+                <span class="dock-label">Random Reveal</span>
+            </button>
+            <button id="btn-reset" class="dock-btn btn-reset" title="Reset Board (R)">
+                <span class="dock-icon">🔄</span>
+                <span class="dock-label">Reset</span>
+            </button>
+            <button id="btn-reveal-all" class="dock-btn btn-reveal" title="Reveal All (A)">
+                <span class="dock-icon">✨</span>
+                <span class="dock-label">Reveal All</span>
+            </button>
+        </div>
 
-            <div class="keyboard-shortcuts">
-                <span class="shortcut"><kbd>1-9</kbd> Reveal tiles</span>
-                <span class="shortcut"><kbd>Space</kbd> Random tile</span>
-                <span class="shortcut"><kbd>R</kbd> Reset</span>
-                <span class="shortcut"><kbd>N</kbd> Next game</span>
-                <span class="shortcut"><kbd>F</kbd> Fullscreen</span>
-            </div>
-        </footer>
+        <!-- Numeric Quick Dial Input -->
+        <div class="dock-input-group">
+            <input type="number" id="tile-input" class="tile-number-input" placeholder="Tile #" min="1" max="100">
+            <button id="btn-reveal-tile" class="dock-btn btn-primary">
+                <span>Reveal</span>
+            </button>
+            <button id="btn-numpad-toggle" class="dock-btn btn-numpad-mob" title="Open Number Pad">
+                <span>🔢</span>
+            </button>
+        </div>
+
+        <!-- Shortcut helper tip -->
+        <div class="dock-shortcuts-help">
+            <span><kbd>Space</kbd> Random</span>
+            <span><kbd>P</kbd> Peek</span>
+            <span><kbd>T</kbd> Timer</span>
+            <span><kbd>H</kbd> Clean HUD</span>
+            <span><kbd>M</kbd> Mute</span>
+        </div>
+    </footer>
+
+    <!-- Mobile Quick Numpad Drawer -->
+    <div id="mobile-numpad-drawer" class="mobile-numpad-drawer">
+        <div class="numpad-header">
+            <span>Select Tile Number</span>
+            <button id="btn-close-numpad" class="numpad-close-btn">&times;</button>
+        </div>
+        <div id="numpad-grid" class="numpad-grid">
+            <!-- Populated dynamically based on total tiles -->
+        </div>
     </div>
-
-    <!-- Fullscreen Button -->
-    <button id="btn-fullscreen" class="fullscreen-btn" title="Toggle Fullscreen (F)">
-        <span>⛶</span>
-    </button>
-
-    <!-- Back to Admin Link -->
-    <a href="/admin/games" class="back-link" title="Back to Games List">
-        <span>← Back</span>
-    </a>
 
     <script src="/js/game.js"></script>
 </body>

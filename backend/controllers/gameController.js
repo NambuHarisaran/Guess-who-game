@@ -3,13 +3,82 @@
  * 
  * Handles all business logic for game management:
  * - CRUD operations for games
- * - Cloudinary image storage
- * - Supabase database for persistent storage
+ * - Image storage (Cloudinary or local /uploads)
+ * - Persistent database (Supabase or local backend/data/games.json)
  */
 
+const fs = require('fs');
+const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { uploadImage, deleteImage } = require('../config/cloudinary');
 const { supabase } = require('../config/supabase');
+
+const dataDir = path.join(__dirname, '../data');
+const gamesFile = path.join(dataDir, 'games.json');
+const uploadsDir = path.join(__dirname, '../../uploads');
+
+// Ensure local directories exist
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+}
+if (!fs.existsSync(gamesFile)) {
+    fs.writeFileSync(gamesFile, JSON.stringify([], null, 2));
+}
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const isCloudinaryConfigured = () => {
+    return Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
+};
+
+const isSupabaseConfigured = () => {
+    return Boolean(supabase && process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY);
+};
+
+const readLocalGames = () => {
+    try {
+        if (!fs.existsSync(gamesFile)) {
+            return [];
+        }
+        const data = fs.readFileSync(gamesFile, 'utf8');
+        return JSON.parse(data || '[]');
+    } catch (err) {
+        console.error('Error reading games.json:', err);
+        return [];
+    }
+};
+
+const writeLocalGames = (games) => {
+    try {
+        fs.writeFileSync(gamesFile, JSON.stringify(games, null, 2), 'utf8');
+    } catch (err) {
+        console.error('Error writing games.json:', err);
+        throw err;
+    }
+};
+
+const saveLocalImage = (buffer, originalname) => {
+    const ext = path.extname(originalname) || '.jpg';
+    const filename = `${Date.now()}-${uuidv4()}${ext}`;
+    const filePath = path.join(uploadsDir, filename);
+    fs.writeFileSync(filePath, buffer);
+    return `/uploads/${filename}`;
+};
+
+const deleteLocalImage = (imageUrl) => {
+    try {
+        if (imageUrl && imageUrl.startsWith('/uploads/')) {
+            const filename = path.basename(imageUrl);
+            const filePath = path.join(uploadsDir, filename);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+    } catch (err) {
+        console.error('Error deleting local image:', err);
+    }
+};
 
 /**
  * Get all games
@@ -17,25 +86,30 @@ const { supabase } = require('../config/supabase');
  */
 exports.getAllGames = async (req, res) => {
     try {
-        const { data, error } = await supabase
-            .from('games')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        // Transform snake_case to camelCase for frontend
-        const games = data.map(game => ({
-            id: game.id,
-            title: game.title,
-            image: game.image,
-            gridSize: game.grid_size,
-            answer: game.answer,
-            revealedTiles: game.revealed_tiles || [],
-            createdAt: game.created_at,
-            updatedAt: game.updated_at
-        }));
-        
+        if (isSupabaseConfigured()) {
+            const { data, error } = await supabase
+                .from('games')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            const games = data.map(game => ({
+                id: game.id,
+                title: game.title,
+                image: game.image,
+                gridSize: game.grid_size,
+                answer: game.answer,
+                revealedTiles: game.revealed_tiles || [],
+                createdAt: game.created_at,
+                updatedAt: game.updated_at
+            }));
+            return res.json(games);
+        }
+
+        // Local storage mode
+        const games = readLocalGames();
+        games.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         res.json(games);
     } catch (error) {
         console.error('Error fetching games:', error);
@@ -49,31 +123,39 @@ exports.getAllGames = async (req, res) => {
  */
 exports.getGameById = async (req, res) => {
     try {
-        const { data, error } = await supabase
-            .from('games')
-            .select('*')
-            .eq('id', req.params.id)
-            .single();
-        
-        if (error) {
-            if (error.code === 'PGRST116') {
-                return res.status(404).json({ error: 'Game not found' });
+        if (isSupabaseConfigured()) {
+            const { data, error } = await supabase
+                .from('games')
+                .select('*')
+                .eq('id', req.params.id)
+                .single();
+            
+            if (error) {
+                if (error.code === 'PGRST116') {
+                    return res.status(404).json({ error: 'Game not found' });
+                }
+                throw error;
             }
-            throw error;
+            
+            const game = {
+                id: data.id,
+                title: data.title,
+                image: data.image,
+                gridSize: data.grid_size,
+                answer: data.answer,
+                revealedTiles: data.revealed_tiles || [],
+                createdAt: data.created_at,
+                updatedAt: data.updated_at
+            };
+            return res.json(game);
         }
-        
-        // Transform to camelCase
-        const game = {
-            id: data.id,
-            title: data.title,
-            image: data.image,
-            gridSize: data.grid_size,
-            answer: data.answer,
-            revealedTiles: data.revealed_tiles || [],
-            createdAt: data.created_at,
-            updatedAt: data.updated_at
-        };
-        
+
+        // Local storage mode
+        const games = readLocalGames();
+        const game = games.find(g => String(g.id) === String(req.params.id));
+        if (!game) {
+            return res.status(404).json({ error: 'Game not found' });
+        }
         res.json(game);
     } catch (error) {
         console.error('Error fetching game:', error);
@@ -84,18 +166,11 @@ exports.getGameById = async (req, res) => {
 /**
  * Create a new game
  * POST /api/games
- * 
- * Request body (multipart/form-data):
- * - image: Image file
- * - gridSize: Number (6, 8, or 10)
- * - answer: String (correct answer)
- * - title: String (optional game title)
  */
 exports.createGame = async (req, res) => {
     try {
         const { gridSize, answer, title } = req.body;
         
-        // Check for image file
         if (!req.file) {
             return res.status(400).json({ error: 'Image is required' });
         }
@@ -104,7 +179,6 @@ exports.createGame = async (req, res) => {
             return res.status(400).json({ error: 'Grid size and answer are required' });
         }
         
-        // Validate grid size
         const validGridSizes = [6, 8, 10];
         const parsedGridSize = parseInt(gridSize);
         
@@ -112,41 +186,60 @@ exports.createGame = async (req, res) => {
             return res.status(400).json({ error: 'Invalid grid size. Must be 6, 8, or 10' });
         }
         
-        // Upload image to Cloudinary
         let imageUrl;
-        try {
-            imageUrl = await uploadImage(req.file.buffer, req.file.mimetype);
-        } catch (e) {
-            console.error('Error uploading to Cloudinary:', e);
-            return res.status(500).json({ error: 'Failed to upload image' });
+        if (isCloudinaryConfigured()) {
+            try {
+                imageUrl = await uploadImage(req.file.buffer, req.file.mimetype);
+            } catch (e) {
+                console.error('Error uploading to Cloudinary:', e);
+                return res.status(500).json({ error: 'Failed to upload image' });
+            }
+        } else {
+            imageUrl = saveLocalImage(req.file.buffer, req.file.originalname);
         }
         
-        // Insert into Supabase
-        const { data, error } = await supabase
-            .from('games')
-            .insert({
-                title: title || `Game ${Date.now()}`,
-                image: imageUrl,
-                grid_size: parsedGridSize,
-                answer: answer.trim(),
-                revealed_tiles: []
-            })
-            .select()
-            .single();
-        
-        if (error) throw error;
-        
-        // Transform to camelCase for response
+        if (isSupabaseConfigured()) {
+            const { data, error } = await supabase
+                .from('games')
+                .insert({
+                    title: title ? title.trim() : `Game ${Date.now()}`,
+                    image: imageUrl,
+                    grid_size: parsedGridSize,
+                    answer: answer.trim(),
+                    revealed_tiles: []
+                })
+                .select()
+                .single();
+            
+            if (error) throw error;
+            
+            const newGame = {
+                id: data.id,
+                title: data.title,
+                image: data.image,
+                gridSize: data.grid_size,
+                answer: data.answer,
+                revealedTiles: data.revealed_tiles || [],
+                createdAt: data.created_at
+            };
+            return res.status(201).json(newGame);
+        }
+
+        // Local storage mode
+        const games = readLocalGames();
         const newGame = {
-            id: data.id,
-            title: data.title,
-            image: data.image,
-            gridSize: data.grid_size,
-            answer: data.answer,
-            revealedTiles: data.revealed_tiles || [],
-            createdAt: data.created_at
+            id: uuidv4(),
+            title: title && title.trim() ? title.trim() : `Game ${Date.now()}`,
+            image: imageUrl,
+            gridSize: parsedGridSize,
+            answer: answer.trim(),
+            revealedTiles: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         };
-        
+        games.push(newGame);
+        writeLocalGames(games);
+
         res.status(201).json(newGame);
     } catch (error) {
         console.error('Error creating game:', error);
@@ -160,84 +253,111 @@ exports.createGame = async (req, res) => {
  */
 exports.updateGame = async (req, res) => {
     try {
-        // First get the existing game
-        const { data: existingGame, error: fetchError } = await supabase
-            .from('games')
-            .select('*')
-            .eq('id', req.params.id)
-            .single();
-        
-        if (fetchError) {
-            if (fetchError.code === 'PGRST116') {
-                return res.status(404).json({ error: 'Game not found' });
-            }
-            throw fetchError;
-        }
-        
         const { gridSize, answer, title, revealedTiles } = req.body;
         
-        // Build update object
-        const updates = {
-            updated_at: new Date().toISOString()
-        };
-        
-        if (title) updates.title = title;
-        if (answer) updates.answer = answer.trim();
-        if (gridSize) {
-            const parsedGridSize = parseInt(gridSize);
-            if ([6, 8, 10].includes(parsedGridSize)) {
-                updates.grid_size = parsedGridSize;
-            }
-        }
-        
-        // Update revealed tiles if provided
+        let parsedRevealedTiles;
         if (revealedTiles !== undefined) {
             try {
-                updates.revealed_tiles = typeof revealedTiles === 'string' 
+                parsedRevealedTiles = typeof revealedTiles === 'string' 
                     ? JSON.parse(revealedTiles) 
                     : revealedTiles;
             } catch (e) {
-                updates.revealed_tiles = revealedTiles;
+                parsedRevealedTiles = revealedTiles;
             }
         }
-        
-        // Update image if new one uploaded
-        if (req.file) {
-            try {
-                // Delete old image from Cloudinary
-                if (existingGame.image && existingGame.image.includes('cloudinary')) {
-                    await deleteImage(existingGame.image);
+
+        if (isSupabaseConfigured()) {
+            const { data: existingGame, error: fetchError } = await supabase
+                .from('games')
+                .select('*')
+                .eq('id', req.params.id)
+                .single();
+            
+            if (fetchError) {
+                if (fetchError.code === 'PGRST116') {
+                    return res.status(404).json({ error: 'Game not found' });
                 }
-                // Upload new image
-                updates.image = await uploadImage(req.file.buffer, req.file.mimetype);
-            } catch (e) {
-                console.error('Error updating image on Cloudinary:', e);
+                throw fetchError;
+            }
+            
+            const updates = {
+                updated_at: new Date().toISOString()
+            };
+            
+            if (title) updates.title = title.trim();
+            if (answer) updates.answer = answer.trim();
+            if (gridSize) {
+                const parsedGridSize = parseInt(gridSize);
+                if ([6, 8, 10].includes(parsedGridSize)) {
+                    updates.grid_size = parsedGridSize;
+                }
+            }
+            if (parsedRevealedTiles !== undefined) {
+                updates.revealed_tiles = parsedRevealedTiles;
+            }
+            if (req.file) {
+                if (isCloudinaryConfigured()) {
+                    if (existingGame.image && existingGame.image.includes('cloudinary')) {
+                        await deleteImage(existingGame.image);
+                    }
+                    updates.image = await uploadImage(req.file.buffer, req.file.mimetype);
+                } else {
+                    deleteLocalImage(existingGame.image);
+                    updates.image = saveLocalImage(req.file.buffer, req.file.originalname);
+                }
+            }
+            
+            const { data, error } = await supabase
+                .from('games')
+                .update(updates)
+                .eq('id', req.params.id)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            
+            const updatedGame = {
+                id: data.id,
+                title: data.title,
+                image: data.image,
+                gridSize: data.grid_size,
+                answer: data.answer,
+                revealedTiles: data.revealed_tiles || [],
+                createdAt: data.created_at,
+                updatedAt: data.updated_at
+            };
+            return res.json(updatedGame);
+        }
+
+        // Local storage mode
+        const games = readLocalGames();
+        const gameIndex = games.findIndex(g => String(g.id) === String(req.params.id));
+        if (gameIndex === -1) {
+            return res.status(404).json({ error: 'Game not found' });
+        }
+
+        const game = games[gameIndex];
+        if (title) game.title = title.trim();
+        if (answer) game.answer = answer.trim();
+        if (gridSize) {
+            const parsedGridSize = parseInt(gridSize);
+            if ([6, 8, 10].includes(parsedGridSize)) {
+                game.gridSize = parsedGridSize;
             }
         }
-        
-        // Update in Supabase
-        const { data, error } = await supabase
-            .from('games')
-            .update(updates)
-            .eq('id', req.params.id)
-            .select()
-            .single();
-        
-        if (error) throw error;
-        
-        // Transform to camelCase
-        const updatedGame = {
-            id: data.id,
-            title: data.title,
-            image: data.image,
-            gridSize: data.grid_size,
-            answer: data.answer,
-            revealedTiles: data.revealed_tiles || [],
-            createdAt: data.created_at,
-            updatedAt: data.updated_at
-        };
-        
-        res.json(updatedGame);
+        if (parsedRevealedTiles !== undefined) {
+            game.revealedTiles = parsedRevealedTiles;
+        }
+        if (req.file) {
+            deleteLocalImage(game.image);
+            game.image = saveLocalImage(req.file.buffer, req.file.originalname);
+        }
+        game.updatedAt = new Date().toISOString();
+
+        games[gameIndex] = game;
+        writeLocalGames(games);
+
+        res.json(game);
     } catch (error) {
         console.error('Error updating game:', error);
         res.status(500).json({ error: 'Failed to update game' });
@@ -250,34 +370,48 @@ exports.updateGame = async (req, res) => {
  */
 exports.deleteGame = async (req, res) => {
     try {
-        // First get the game to delete its image
-        const { data: game, error: fetchError } = await supabase
-            .from('games')
-            .select('*')
-            .eq('id', req.params.id)
-            .single();
-        
-        if (fetchError) {
-            if (fetchError.code === 'PGRST116') {
-                return res.status(404).json({ error: 'Game not found' });
+        if (isSupabaseConfigured()) {
+            const { data: game, error: fetchError } = await supabase
+                .from('games')
+                .select('*')
+                .eq('id', req.params.id)
+                .single();
+            
+            if (fetchError) {
+                if (fetchError.code === 'PGRST116') {
+                    return res.status(404).json({ error: 'Game not found' });
+                }
+                throw fetchError;
             }
-            throw fetchError;
+            
+            if (game.image && game.image.includes('cloudinary')) {
+                await deleteImage(game.image);
+            } else if (game.image && game.image.startsWith('/uploads/')) {
+                deleteLocalImage(game.image);
+            }
+            
+            const { error } = await supabase
+                .from('games')
+                .delete()
+                .eq('id', req.params.id);
+            
+            if (error) throw error;
+            
+            return res.json({ message: 'Game deleted successfully', game });
         }
-        
-        // Delete image from Cloudinary
-        if (game.image && game.image.includes('cloudinary')) {
-            await deleteImage(game.image);
+
+        // Local storage mode
+        const games = readLocalGames();
+        const gameIndex = games.findIndex(g => String(g.id) === String(req.params.id));
+        if (gameIndex === -1) {
+            return res.status(404).json({ error: 'Game not found' });
         }
-        
-        // Delete from Supabase
-        const { error } = await supabase
-            .from('games')
-            .delete()
-            .eq('id', req.params.id);
-        
-        if (error) throw error;
-        
-        res.json({ message: 'Game deleted successfully', game });
+
+        const [deletedGame] = games.splice(gameIndex, 1);
+        deleteLocalImage(deletedGame.image);
+        writeLocalGames(games);
+
+        res.json({ message: 'Game deleted successfully', game: deletedGame });
     } catch (error) {
         console.error('Error deleting game:', error);
         res.status(500).json({ error: 'Failed to delete game' });

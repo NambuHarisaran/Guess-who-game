@@ -1,248 +1,255 @@
 /**
- * Stage Guess Reveal Game - Game Creation
- * 
- * Handles:
- * - Image upload with preview
- * - Grid size selection
- * - Form validation and submission
- * - Grid preview
+ * Stage Guess Reveal Game - Studio Creation Logic
  */
 
 // DOM Elements
 const elements = {
     form: document.getElementById('create-game-form'),
     titleInput: document.getElementById('game-title'),
+    categorySelect: document.getElementById('game-category'),
     imageInput: document.getElementById('game-image'),
     answerInput: document.getElementById('game-answer'),
     uploadArea: document.getElementById('upload-area'),
-    uploadPlaceholder: document.querySelector('.upload-placeholder'),
-    imagePreview: document.getElementById('image-preview'),
+    dropzoneContent: document.getElementById('dropzone-content'),
+    dropzoneMeta: document.getElementById('dropzone-meta'),
+    metaFileName: document.getElementById('meta-file-name'),
+    metaFileSize: document.getElementById('meta-file-size'),
+    btnRemoveImage: document.getElementById('btn-remove-image'),
     gridOptions: document.querySelectorAll('input[name="gridSize"]'),
-    previewSection: document.getElementById('preview-section'),
-    gridPreview: document.getElementById('grid-preview'),
+    stageUnderlay: document.getElementById('stage-image-underlay'),
+    stageOverlay: document.getElementById('stage-grid-overlay'),
+    stagePlaceholder: document.getElementById('stage-placeholder'),
+    previewTileCount: document.getElementById('preview-tile-count'),
+    btnSubmitGame: document.getElementById('btn-submit-game'),
     toast: document.getElementById('toast'),
-    toastMessage: document.getElementById('toast-message')
+    toastMessage: document.getElementById('toast-message'),
+    hamburgerBtn: document.getElementById('hamburger-btn'),
+    drawerCloseBtn: document.getElementById('drawer-close-btn'),
+    adminSidebar: document.getElementById('admin-sidebar'),
+    sidebarBackdrop: document.getElementById('sidebar-backdrop')
 };
 
 let selectedGridSize = 8;
+let currentImageSrc = null;
 
-/**
- * Initialize the create game page
- */
 function initCreateGame() {
+    setupMobileDrawer();
     setupImageUpload();
     setupGridOptions();
     setupFormSubmission();
-    updateGridPreview();
+    updateLiveOverlayPreview();
 }
 
-/**
- * Setup image upload functionality
- */
+function setupMobileDrawer() {
+    const openDrawer = () => {
+        elements.adminSidebar?.classList.add('drawer-open');
+        elements.sidebarBackdrop?.classList.add('active');
+    };
+
+    const closeDrawer = () => {
+        elements.adminSidebar?.classList.remove('drawer-open');
+        elements.sidebarBackdrop?.classList.remove('active');
+    };
+
+    elements.hamburgerBtn?.addEventListener('click', openDrawer);
+    elements.drawerCloseBtn?.addEventListener('click', closeDrawer);
+    elements.sidebarBackdrop?.addEventListener('click', closeDrawer);
+}
+
 function setupImageUpload() {
-    // Click to upload - only trigger if click is NOT on the file input itself
-    elements.uploadArea.addEventListener('click', (e) => {
-        // Prevent double trigger - only click if target is not the file input
-        if (e.target !== elements.imageInput) {
+    // Drag & Drop
+    ['dragenter', 'dragover'].forEach(eventName => {
+        elements.uploadArea.addEventListener(eventName, (e) => {
             e.preventDefault();
             e.stopPropagation();
-            elements.imageInput.click();
-        }
+            elements.uploadArea.classList.add('dragover');
+        });
     });
-    
-    // Touch support for mobile
-    elements.uploadArea.addEventListener('touchend', (e) => {
-        if (e.target !== elements.imageInput) {
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        elements.uploadArea.addEventListener(eventName, (e) => {
             e.preventDefault();
-            elements.imageInput.click();
-        }
+            e.stopPropagation();
+            elements.uploadArea.classList.remove('dragover');
+        });
     });
-    
-    // File selected
-    elements.imageInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            handleImageFile(file);
-        }
-    });
-    
-    // Drag and drop
-    elements.uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        elements.uploadArea.classList.add('dragover');
-    });
-    
-    elements.uploadArea.addEventListener('dragleave', () => {
-        elements.uploadArea.classList.remove('dragover');
-    });
-    
+
     elements.uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        elements.uploadArea.classList.remove('dragover');
-        
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            // Set to input for form submission
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            elements.imageInput.files = dataTransfer.files;
-            
-            handleImageFile(file);
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            elements.imageInput.files = files;
+            handleFileSelect(files[0]);
         }
+    });
+
+    elements.imageInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+
+    elements.btnRemoveImage?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        elements.imageInput.value = '';
+        currentImageSrc = null;
+        elements.dropzoneContent.classList.remove('hidden');
+        elements.dropzoneMeta.classList.add('hidden');
+        updateLiveOverlayPreview();
     });
 }
 
-/**
- * Handle image file selection
- * @param {File} file - The selected image file
- */
-function handleImageFile(file) {
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-        showToast('Invalid file type. Please select an image.', 'error');
+function handleFileSelect(file) {
+    if (!file.type.match('image.*')) {
+        showToast('Please select a valid image file (JPG, PNG, WebP)', 'error');
         return;
     }
-    
-    // Validate file size (10MB)
+
     if (file.size > 10 * 1024 * 1024) {
-        showToast('File too large. Maximum size is 10MB.', 'error');
+        showToast('Image file size must be less than 10MB', 'error');
         return;
     }
-    
-    // Show preview
+
+    // Display metadata
+    elements.metaFileName.textContent = file.name;
+    elements.metaFileSize.textContent = `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+    elements.dropzoneContent.classList.add('hidden');
+    elements.dropzoneMeta.classList.remove('hidden');
+
     const reader = new FileReader();
     reader.onload = (e) => {
-        elements.imagePreview.src = e.target.result;
-        elements.imagePreview.classList.remove('hidden');
-        elements.uploadPlaceholder.style.display = 'none';
+        currentImageSrc = e.target.result;
+        updateLiveOverlayPreview();
     };
     reader.readAsDataURL(file);
-    
-    // Show preview section
-    elements.previewSection.classList.remove('hidden');
 }
 
-/**
- * Setup grid size options
- */
 function setupGridOptions() {
     elements.gridOptions.forEach(option => {
         option.addEventListener('change', (e) => {
             selectedGridSize = parseInt(e.target.value);
-            updateGridPreview();
+            updateLiveOverlayPreview();
         });
     });
 }
 
-/**
- * Update the grid preview display
- */
-function updateGridPreview() {
+function updateLiveOverlayPreview() {
+    if (!elements.stageOverlay) return;
+
     const totalTiles = selectedGridSize * selectedGridSize;
-    
-    elements.gridPreview.style.gridTemplateColumns = `repeat(${selectedGridSize}, 1fr)`;
-    elements.gridPreview.innerHTML = '';
-    
+    elements.previewTileCount.textContent = `${totalTiles} Tiles (${selectedGridSize}×${selectedGridSize})`;
+
+    if (!currentImageSrc) {
+        elements.stagePlaceholder.classList.remove('hidden');
+        elements.stageUnderlay.style.backgroundImage = 'none';
+        elements.stageOverlay.innerHTML = '';
+        return;
+    }
+
+    elements.stagePlaceholder.classList.add('hidden');
+    elements.stageUnderlay.style.backgroundImage = `url("${currentImageSrc}")`;
+    elements.stageOverlay.style.gridTemplateColumns = `repeat(${selectedGridSize}, 1fr)`;
+    elements.stageOverlay.style.gridTemplateRows = `repeat(${selectedGridSize}, 1fr)`;
+
+    elements.stageOverlay.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+
     for (let i = 1; i <= totalTiles; i++) {
         const tile = document.createElement('div');
-        tile.className = 'preview-tile';
+        tile.className = 'preview-overlay-tile';
         tile.textContent = i;
-        elements.gridPreview.appendChild(tile);
+        tile.title = `Tile #${i} - Hover to peek`;
+
+        tile.addEventListener('mouseenter', () => tile.classList.add('tile-peek'));
+        tile.addEventListener('mouseleave', () => tile.classList.remove('tile-peek'));
+
+        fragment.appendChild(tile);
     }
+
+    elements.stageOverlay.appendChild(fragment);
 }
 
-/**
- * Setup form submission
- */
 function setupFormSubmission() {
     elements.form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Validate form
+
         const title = elements.titleInput.value.trim();
         const answer = elements.answerInput.value.trim();
         const image = elements.imageInput.files[0];
-        
+
         if (!title) {
             showToast('Please enter a game title', 'error');
             elements.titleInput.focus();
             return;
         }
-        
+
         if (!image) {
-            showToast('Please select an image', 'error');
+            showToast('Please upload an image for the game', 'error');
             return;
         }
-        
+
         if (!answer) {
-            showToast('Please enter the correct answer', 'error');
+            showToast('Please enter the secret answer', 'error');
             elements.answerInput.focus();
             return;
         }
-        
-        // Create form data
+
         const formData = new FormData();
         formData.append('title', title);
         formData.append('image', image);
         formData.append('gridSize', selectedGridSize);
         formData.append('answer', answer);
-        
-        // Disable submit button
-        const submitBtn = elements.form.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="btn-icon">⏳</span> Creating...';
-        
+
+        elements.btnSubmitGame.disabled = true;
+        elements.btnSubmitGame.innerHTML = '<span class="btn-icon">⏳</span> Creating Game...';
+
         try {
-            const response = await fetch('/api/games', {
+            const res = await fetch('/api/games', {
                 method: 'POST',
                 body: formData
             });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to create game');
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || 'Failed to create game');
             }
-            
-            const game = await response.json();
-            
-            showToast('Game created successfully!', 'success');
-            
-            // Redirect to games list after delay
+
+            const createdGame = await res.json();
+            showToast('✨ Game created successfully! Launching...', 'success');
+
             setTimeout(() => {
-                window.location.href = '/admin/games';
-            }, 1500);
-            
+                window.location.href = `/game/${createdGame.id}`;
+            }, 1200);
+
         } catch (error) {
-            console.error('Error creating game:', error);
-            showToast(error.message || 'Failed to create game', 'error');
-            
-            // Re-enable submit button
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span class="btn-icon">✓</span> Create Game';
+            console.error(error);
+            showToast(error.message || 'Error creating game', 'error');
+            elements.btnSubmitGame.disabled = false;
+            elements.btnSubmitGame.innerHTML = '<span class="btn-icon">✨</span> Create & Launch Game';
+        }
+    });
+
+    // Keyboard shortcut Ctrl+Enter to submit
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            elements.form.requestSubmit();
         }
     });
 }
 
-/**
- * Show toast notification
- * @param {string} message - Message to display
- * @param {string} type - Toast type ('success' or 'error')
- */
 function showToast(message, type = 'success') {
+    if (!elements.toast || !elements.toastMessage) return;
     elements.toastMessage.textContent = message;
     elements.toast.className = `toast ${type}`;
     elements.toast.classList.remove('hidden');
     elements.toast.classList.add('show');
-    
-    // Hide after 3 seconds
+
     setTimeout(() => {
         elements.toast.classList.remove('show');
         setTimeout(() => {
             elements.toast.classList.add('hidden');
         }, 300);
-    }, 3000);
+    }, 3200);
 }
 
-// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', initCreateGame);
