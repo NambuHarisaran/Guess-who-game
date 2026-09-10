@@ -158,11 +158,7 @@ function updateLiveOverlayPreview() {
         const tile = document.createElement('div');
         tile.className = 'preview-overlay-tile';
         tile.textContent = i;
-        tile.title = `Tile #${i} - Hover to peek`;
-
-        tile.addEventListener('mouseenter', () => tile.classList.add('tile-peek'));
-        tile.addEventListener('mouseleave', () => tile.classList.remove('tile-peek'));
-
+        tile.title = `Tile #${i}`;
         fragment.appendChild(tile);
     }
 
@@ -204,7 +200,7 @@ function setupFormSubmission() {
         elements.btnSubmitGame.innerHTML = '<span class="btn-icon">⏳</span> Creating Game...';
 
         try {
-            const res = await fetch('/api/games', {
+            const res = await fetch('/api/games?admin=true', {
                 method: 'POST',
                 body: formData
             });

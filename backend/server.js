@@ -66,6 +66,24 @@ app.get('/game/:id', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/game.html'));
 });
 
+// Serve dual screen battle game
+app.get('/dual', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dual.html'));
+});
+
+app.get('/dual/:id1/:id2', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dual.html'));
+});
+
+// Serve projector display view (clean secondary screen)
+app.get('/display', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/display.html'));
+});
+
+app.get('/display/:target', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/display.html'));
+});
+
 // Serve admin pages
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/admin.html'));

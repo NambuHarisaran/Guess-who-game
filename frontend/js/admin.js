@@ -47,7 +47,7 @@ function setupMobileDrawer() {
  */
 async function loadDashboardStats() {
     try {
-        const response = await fetch('/api/games');
+        const response = await fetch('/api/games?admin=true');
         const games = await response.json();
 
         // Update stats

@@ -40,6 +40,7 @@ const upload = multer({
 
 // Routes
 router.get('/games', gameController.getAllGames);
+router.get('/games/:id/answer', gameController.getGameAnswer);
 router.get('/games/:id', gameController.getGameById);
 router.post('/games', upload.single('image'), gameController.createGame);
 router.put('/games/:id', upload.single('image'), gameController.updateGame);

@@ -4,12 +4,16 @@ A web application for physical quiz events where hidden images are revealed thro
 
 ## Features
 
-- **Admin Dashboard**: Create, manage, and delete games
-- **Customizable Grid**: Choose from 6×6, 8×8, or 10×10 tile layouts
+- **Dual Screen & 2-Player Battle Arena**: Host 2 contestants or teams simultaneously with 2 separate questions/boards
+- **Interactive Scoring System**: Live scoreboard with customizable points (+100 correct, -25 penalty, custom adjustments), round wins counter, and floating animations
+- **Buzzer Lockout System**: Integrated player buzzers (Shortcuts `1` and `2`) with audio synthesis and lockout alerts
+- **Multi-Monitor / Projector Popout Support**: Real-time zero-latency broadcast mirroring (`/display/dual`, `/display/1`, `/display/2`) so the audience only sees the live game while hosts keep peek spoilers
+- **Admin Dashboard & Management Hub**: Create, manage, and delete games with search and quick launch
+- **Customizable Grids**: Choose from 6×6, 8×8, or 10×10 tile layouts
 - **Interactive Reveal**: Click tiles or enter numbers to reveal parts of the image
-- **Keyboard Shortcuts**: Quick controls for hosts
-- **Projector Optimized**: 1920×1080 friendly layout with large, visible tiles
-- **Smooth Animations**: Tiles fade out with flip animation when revealed
+- **Host Stage Controls**: Host peek mode (`P`), countdown timer (`T`), clean HUD presentation mode (`H`), and sound toggle (`M`)
+- **Web Audio Synthesis**: Dynamic chimes, roulette spins, buzzers, and victory fanfares without external audio asset dependencies
+- **Projector & 4K Optimized**: Broadcast glassmorphism layout with smooth 3D tile flip animations
 
 ## Screenshots
 

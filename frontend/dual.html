@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#030712">
+    <title>Dual Screen Battle - Stage Guess Reveal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="/css/dual.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=JetBrains+Mono:wght@700;900&display=swap">
+</head>
+<body class="game-body dual-body">
+    <!-- Confetti Particle Canvas -->
+    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader-pulse"></div>
+        <p class="loading-text">Loading Dual Stage Arena...</p>
+    </div>
+
+    <!-- Top Navigation HUD Bar -->
+    <header id="stage-hud" class="dual-hud">
+        <div class="dual-hud-left">
+            <a href="/admin/games" class="hud-btn back-btn" title="Back to Games Hub">
+                <span>&larr; Exit</span>
+            </a>
+            <div class="dual-title-badge">
+                <span class="live-indicator"></span>
+                <h1>Dual Stage Battle</h1>
+                <span class="mode-pill-tag">2-Player Live</span>
+            </div>
+            <button id="btn-open-setup" class="dock-btn-compact" title="Change Questions / Match Settings">
+                <span>⚙️ Select Questions</span>
+            </button>
+        </div>
+
+        <!-- Shared Match Countdown Timer -->
+        <div class="dual-hud-center">
+            <div class="dual-timer-wrap">
+                <div class="timer-box">
+                    <span>⏱️</span>
+                    <span id="timer-text" class="timer-digits">60s</span>
+                </div>
+                <button id="btn-timer-toggle" class="hud-icon-btn" title="Start/Pause Timer (T)">▶</button>
+                <button id="btn-timer-reset" class="hud-icon-btn" title="Reset Timer">↺</button>
+                <select id="timer-preset-select" class="timer-preset-select" title="Preset">
+                    <option value="60">60s</option>
+                    <option value="30">30s</option>
+                    <option value="90">90s</option>
+                    <option value="120">120s</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Top Right Actions -->
+        <div class="dual-hud-right">
+            <button id="btn-open-popouts" class="hud-btn" title="Projector / Multi-Display Output Windows">
+                <span class="btn-icon">📺</span> <span class="btn-lbl">Displays</span>
+            </button>
+            <button id="btn-sound-toggle" class="hud-btn" title="Toggle Sound (M)">
+                <span id="sound-icon" class="btn-icon">🔊</span>
+            </button>
+            <button id="btn-hud-toggle" class="hud-btn" title="Clean Stage Projector Mode (H)">
+                <span class="btn-icon">✨</span>
+            </button>
+            <button id="btn-fullscreen" class="hud-btn" title="Toggle Fullscreen (F)">
+                <span class="btn-icon">⛶</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Synchronized Interactive Scoreboard Bar -->
+    <section class="dual-scoreboard" id="dual-scoreboard">
+        <!-- Player 1 Score Card (Cyan) -->
+        <div class="player-score-card player-1" id="card-p1">
+            <div class="player-meta">
+                <div class="player-avatar">1</div>
+                <div class="player-name-wrap">
+                    <input type="text" id="p1-name-input" class="player-name-input" value="Player 1" maxlength="16" title="Click to rename player">
+                    <span class="player-rounds-badge">
+                        <span>Wins:</span>
+                        <span id="p1-wins" class="rounds-stars">☆☆☆</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="player-score-block">
+                <div class="score-action-group">
+                    <button class="btn-buzzer" id="btn-buzzer-1" title="Buzzer for Player 1 (Shortcut: 1)">
+                        🔔 BUZZ (1)
+                    </button>
+                    <button class="btn-score-adjust btn-correct" id="btn-p1-correct" title="Award Correct Answer (+100)">
+                        +100
+                    </button>
+                    <button class="btn-score-adjust btn-wrong" id="btn-p1-wrong" title="Penalty for Wrong Guess (-25)">
+                        -25
+                    </button>
+                    <button class="btn-score-adjust" id="btn-p1-custom" title="Custom Points">
+                        ±
+                    </button>
+                </div>
+                <div class="score-number-display" id="p1-score-display">
+                    <span id="p1-score-val">0</span>
+                    <span id="p1-score-popup" class="score-delta-popup"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Match State / Turn Switcher -->
+        <div class="scoreboard-center">
+            <div class="turn-mode-selector">
+                <button class="turn-tab-btn" data-turn="p1" id="btn-turn-p1">P1 Turn</button>
+                <button class="turn-tab-btn active" data-turn="both" id="btn-turn-both">⚡ Live Race</button>
+                <button class="turn-tab-btn" data-turn="p2" id="btn-turn-p2">P2 Turn</button>
+            </div>
+            <div id="buzzer-status-banner" class="buzzer-alert-banner">
+                <span>🔔 Buzzers Active</span>
+            </div>
+        </div>
+
+        <!-- Player 2 Score Card (Amber) -->
+        <div class="player-score-card player-2" id="card-p2">
+            <div class="player-score-block">
+                <div class="score-number-display" id="p2-score-display">
+                    <span id="p2-score-val">0</span>
+                    <span id="p2-score-popup" class="score-delta-popup"></span>
+                </div>
+                <div class="score-action-group">
+                    <button class="btn-score-adjust" id="btn-p2-custom" title="Custom Points">
+                        ±
+                    </button>
+                    <button class="btn-score-adjust btn-wrong" id="btn-p2-wrong" title="Penalty for Wrong Guess (-25)">
+                        -25
+                    </button>
+                    <button class="btn-score-adjust btn-correct" id="btn-p2-correct" title="Award Correct Answer (+100)">
+                        +100
+                    </button>
+                    <button class="btn-buzzer" id="btn-buzzer-2" title="Buzzer for Player 2 (Shortcut: 2)">
+                        🔔 BUZZ (2)
+                    </button>
+                </div>
+            </div>
+
+            <div class="player-meta">
+                <div class="player-name-wrap" style="text-align: right;">
+                    <input type="text" id="p2-name-input" class="player-name-input" value="Player 2" maxlength="16" style="text-align: right;" title="Click to rename player">
+                    <span class="player-rounds-badge" style="justify-content: flex-end;">
+                        <span>Wins:</span>
+                        <span id="p2-wins" class="rounds-stars">☆☆☆</span>
+                    </span>
+                </div>
+                <div class="player-avatar">2</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dual Split Stage Arena -->
+    <main class="dual-stage-arena">
+        <!-- Arena Left: Player 1 Question -->
+        <section class="board-arena-card arena-p1" id="arena-1">
+            <!-- Header -->
+            <div class="arena-header">
+                <div class="arena-title-wrap">
+                    <span class="arena-badge-player" id="arena-p1-badge">P1 Question</span>
+                    <h2 class="arena-question-title" id="p1-question-title">Loading Question 1...</h2>
+                </div>
+                <div class="arena-stats-wrap">
+                    <div class="arena-stat-badge">
+                        <span>Left:</span> <strong id="p1-tiles-left">0</strong>
+                    </div>
+                    <div class="arena-stat-badge">
+                        <span>Revealed:</span> <strong id="p1-tiles-rev">0</strong> (<span id="p1-tiles-pct">0%</span>)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Board Viewport -->
+            <div class="arena-board-viewport">
+                <div id="p1-game-board" class="dual-game-board">
+                    <!-- Dynamically generated tiles -->
+                </div>
+
+                <!-- Solved Overlay -->
+                <div id="p1-solved-banner" class="arena-solved-banner hidden">
+                    <div class="solved-card">
+                        <div class="solved-badge">🎉 Question 1 Revealed!</div>
+                        <h3 class="solved-answer-text" id="p1-solved-answer"></h3>
+                        <div class="answer-actions">
+                            <button class="btn btn-secondary btn-small" id="btn-p1-replay">
+                                🔄 Replay
+                            </button>
+                            <button class="btn btn-primary btn-small" id="btn-p1-award-win">
+                                🏆 Award P1 Win
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arena Bottom Dock -->
+            <div class="arena-dock">
+                <div class="arena-dock-group">
+                    <button class="dock-btn-compact" id="btn-p1-random" title="Reveal Random Tile">
+                        <span>🎲 Random</span>
+                    </button>
+                    <button class="dock-btn-compact" id="btn-p1-reset" title="Reset Board">
+                        <span>🔄 Reset</span>
+                    </button>
+                    <button class="dock-btn-compact" id="btn-p1-reveal-all" title="Reveal All Tiles">
+                        <span>✨ All</span>
+                    </button>
+                </div>
+                <div class="arena-dock-group">
+                    <input type="number" id="p1-tile-input" class="arena-input-dial" placeholder="Tile #" min="1">
+                    <button class="dock-btn-compact" id="btn-p1-reveal-tile">Reveal</button>
+                    <button class="dock-btn-compact btn-score-adjust btn-correct" id="btn-p1-quick-solve" title="Mark Solved by P1">
+                        🎯 Solved
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Arena Right: Player 2 Question -->
+        <section class="board-arena-card arena-p2" id="arena-2">
+            <!-- Header -->
+            <div class="arena-header">
+                <div class="arena-title-wrap">
+                    <span class="arena-badge-player" id="arena-p2-badge">P2 Question</span>
+                    <h2 class="arena-question-title" id="p2-question-title">Loading Question 2...</h2>
+                </div>
+                <div class="arena-stats-wrap">
+                    <div class="arena-stat-badge">
+                        <span>Left:</span> <strong id="p2-tiles-left">0</strong>
+                    </div>
+                    <div class="arena-stat-badge">
+                        <span>Revealed:</span> <strong id="p2-tiles-rev">0</strong> (<span id="p2-tiles-pct">0%</span>)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Board Viewport -->
+            <div class="arena-board-viewport">
+                <div id="p2-game-board" class="dual-game-board">
+                    <!-- Dynamically generated tiles -->
+                </div>
+
+                <!-- Solved Overlay -->
+                <div id="p2-solved-banner" class="arena-solved-banner hidden">
+                    <div class="solved-card">
+                        <div class="solved-badge">🎉 Question 2 Revealed!</div>
+                        <h3 class="solved-answer-text" id="p2-solved-answer"></h3>
+                        <div class="answer-actions">
+                            <button class="btn btn-secondary btn-small" id="btn-p2-replay">
+                                🔄 Replay
+                            </button>
+                            <button class="btn btn-primary btn-small" id="btn-p2-award-win">
+                                🏆 Award P2 Win
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arena Bottom Dock -->
+            <div class="arena-dock">
+                <div class="arena-dock-group">
+                    <button class="dock-btn-compact" id="btn-p2-random" title="Reveal Random Tile">
+                        <span>🎲 Random</span>
+                    </button>
+                    <button class="dock-btn-compact" id="btn-p2-reset" title="Reset Board">
+                        <span>🔄 Reset</span>
+                    </button>
+                    <button class="dock-btn-compact" id="btn-p2-reveal-all" title="Reveal All Tiles">
+                        <span>✨ All</span>
+                    </button>
+                </div>
+                <div class="arena-dock-group">
+                    <input type="number" id="p2-tile-input" class="arena-input-dial" placeholder="Tile #" min="1">
+                    <button class="dock-btn-compact" id="btn-p2-reveal-tile">Reveal</button>
+                    <button class="dock-btn-compact btn-score-adjust btn-correct" id="btn-p2-quick-solve" title="Mark Solved by P2">
+                        🎯 Solved
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Match Setup Modal (Pick 2 Games) -->
+    <div id="match-setup-modal" class="dual-modal-overlay hidden">
+        <div class="dual-modal-content">
+            <div class="dual-modal-header">
+                <h3>⚔️ Dual Match Setup & Question Pair</h3>
+                <button class="drawer-close-btn" id="btn-close-setup">&times;</button>
+            </div>
+            <div class="dual-modal-body">
+                <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">
+                    Select separate quiz questions for Player 1 and Player 2. Both boards will run simultaneously or turn-by-turn.
+                </p>
+
+                <div class="game-picker-grid">
+                    <!-- Picker 1 -->
+                    <div class="picker-column p1-col">
+                        <h4><span>🟦</span> Screen 1 (Player 1)</h4>
+                        <select id="select-game-1" class="game-select-dropdown"></select>
+                        <div class="game-preview-thumb">
+                            <img id="preview-img-1" src="" alt="Question 1 preview" style="display: none;">
+                            <span id="preview-placeholder-1" style="color: var(--text-muted); font-size: 0.8rem;">Select a question</span>
+                        </div>
+                    </div>
+
+                    <!-- Picker 2 -->
+                    <div class="picker-column p2-col">
+                        <h4><span>🟨</span> Screen 2 (Player 2)</h4>
+                        <select id="select-game-2" class="game-select-dropdown"></select>
+                        <div class="game-preview-thumb">
+                            <img id="preview-img-2" src="" alt="Question 2 preview" style="display: none;">
+                            <span id="preview-placeholder-2" style="color: var(--text-muted); font-size: 0.8rem;">Select a question</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 140px;">
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 4px;">Correct Guess Points</label>
+                        <input type="number" id="setup-points-correct" class="game-select-dropdown" value="100" min="10" step="10">
+                    </div>
+                    <div style="flex: 1; min-width: 140px;">
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 4px;">Wrong Guess Penalty</label>
+                        <input type="number" id="setup-points-penalty" class="game-select-dropdown" value="25" min="0" step="5">
+                    </div>
+                    <div style="flex: 1; min-width: 140px;">
+                        <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 4px;">Round Timer</label>
+                        <select id="setup-timer-val" class="game-select-dropdown">
+                            <option value="60">60 Seconds</option>
+                            <option value="30">30 Seconds</option>
+                            <option value="90">90 Seconds</option>
+                            <option value="120">120 Seconds</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="dual-modal-footer">
+                <button class="btn btn-secondary" id="btn-cancel-setup">Cancel</button>
+                <button class="btn btn-primary btn-glow" id="btn-apply-setup">✨ Launch Match</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi-Display / Projector Popout Manager Modal -->
+    <div id="popouts-modal" class="dual-modal-overlay hidden">
+        <div class="dual-modal-content">
+            <div class="dual-modal-header">
+                <h3>📺 Multi-Display & Projector Outputs</h3>
+                <button class="drawer-close-btn" id="btn-close-popouts">&times;</button>
+            </div>
+            <div class="dual-modal-body">
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+                    Open clean stage display windows for external monitors/projectors. The audience will only see the live board & scores, while you keep host answers and peek controls on your laptop!
+                </p>
+
+                <div class="display-target-card">
+                    <div class="display-target-info">
+                        <h5>🖥️ Dual Stage Projector (Split-Screen)</h5>
+                        <p>Broadcasts both Player 1 & Player 2 boards side-by-side on a single widescreen projector.</p>
+                    </div>
+                    <button class="btn btn-primary btn-small" id="btn-open-disp-dual">
+                        Open Window ↗
+                    </button>
+                </div>
+
+                <div class="display-target-card">
+                    <div class="display-target-info">
+                        <h5>📺 Screen 1 Only (Player 1 Board)</h5>
+                        <p>Dedicated fullscreen output for Player 1 / Left Projector screen.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-small" id="btn-open-disp-1">
+                        Open Window ↗
+                    </button>
+                </div>
+
+                <div class="display-target-card">
+                    <div class="display-target-info">
+                        <h5>📺 Screen 2 Only (Player 2 Board)</h5>
+                        <p>Dedicated fullscreen output for Player 2 / Right Projector screen.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-small" id="btn-open-disp-2">
+                        Open Window ↗
+                    </button>
+                </div>
+            </div>
+            <div class="dual-modal-footer">
+                <button class="btn btn-secondary" id="btn-dismiss-popouts">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Score Adjust Modal -->
+    <div id="score-modal" class="dual-modal-overlay hidden">
+        <div class="dual-modal-content" style="max-width: 400px;">
+            <div class="dual-modal-header">
+                <h3 id="score-modal-title">Adjust Score</h3>
+                <button class="drawer-close-btn" id="btn-close-score-modal">&times;</button>
+            </div>
+            <div class="dual-modal-body">
+                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">Points Delta (e.g. +50 or -30)</label>
+                <input type="number" id="custom-score-input" class="game-select-dropdown" value="50" step="5">
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button class="btn btn-secondary btn-small" onclick="document.getElementById('custom-score-input').value = 10">+10</button>
+                    <button class="btn btn-secondary btn-small" onclick="document.getElementById('custom-score-input').value = 50">+50</button>
+                    <button class="btn btn-secondary btn-small" onclick="document.getElementById('custom-score-input').value = 100">+100</button>
+                    <button class="btn btn-secondary btn-small" onclick="document.getElementById('custom-score-input').value = -25">-25</button>
+                    <button class="btn btn-secondary btn-small" onclick="document.getElementById('custom-score-input').value = -50">-50</button>
+                </div>
+            </div>
+            <div class="dual-modal-footer">
+                <button class="btn btn-secondary" id="btn-cancel-score">Cancel</button>
+                <button class="btn btn-primary" id="btn-apply-score">Apply Points</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match Champion Celebration Modal -->
+    <div id="champion-modal" class="dual-modal-overlay hidden">
+        <div class="dual-modal-content" style="text-align: center; max-width: 480px;">
+            <div class="dual-modal-body" style="padding: 2.5rem 1.5rem; align-items: center;">
+                <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🏆</div>
+                <span class="mode-pill-tag" style="margin-bottom: 0.5rem;">Match Champion</span>
+                <h2 id="champion-name" style="font-size: 2rem; font-weight: 900; color: #fff; margin: 0 0 1rem;">PLAYER 1 WINS!</h2>
+                <p id="champion-subtext" style="color: var(--text-secondary); font-size: 0.95rem; margin: 0 0 1.5rem;">
+                    Final Score: 300 vs 150
+                </p>
+                <div style="display: flex; gap: 0.75rem; justify-content: center; width: 100%;">
+                    <button class="btn btn-secondary" id="btn-reset-match-scores">🔄 Reset Match</button>
+                    <button class="btn btn-primary btn-glow" id="btn-next-match-pair">➡️ Next Round</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Engine Scripts -->
+    <script src="/js/dual.js"></script>
+</body>
+</html>

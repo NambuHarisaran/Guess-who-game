@@ -94,22 +94,34 @@ exports.getAllGames = async (req, res) => {
             
             if (error) throw error;
             
-            const games = data.map(game => ({
-                id: game.id,
-                title: game.title,
-                image: game.image,
-                gridSize: game.grid_size,
-                answer: game.answer,
-                revealedTiles: game.revealed_tiles || [],
-                createdAt: game.created_at,
-                updatedAt: game.updated_at
-            }));
+            const isAdmin = req.query.admin === 'true';
+            const games = data.map(game => {
+                const g = {
+                    id: game.id,
+                    title: game.title,
+                    image: game.image,
+                    gridSize: game.grid_size,
+                    revealedTiles: game.revealed_tiles || [],
+                    createdAt: game.created_at,
+                    updatedAt: game.updated_at
+                };
+                if (isAdmin) g.answer = game.answer;
+                return g;
+            });
             return res.json(games);
         }
 
         // Local storage mode
         const games = readLocalGames();
         games.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const isAdminLocal = req.query.admin === 'true';
+        if (!isAdminLocal) {
+            const sanitized = games.map(g => {
+                const { answer, ...rest } = g;
+                return rest;
+            });
+            return res.json(sanitized);
+        }
         res.json(games);
     } catch (error) {
         console.error('Error fetching games:', error);
@@ -142,11 +154,11 @@ exports.getGameById = async (req, res) => {
                 title: data.title,
                 image: data.image,
                 gridSize: data.grid_size,
-                answer: data.answer,
                 revealedTiles: data.revealed_tiles || [],
                 createdAt: data.created_at,
                 updatedAt: data.updated_at
             };
+            if (req.query.admin === 'true') game.answer = data.answer;
             return res.json(game);
         }
 
@@ -155,6 +167,10 @@ exports.getGameById = async (req, res) => {
         const game = games.find(g => String(g.id) === String(req.params.id));
         if (!game) {
             return res.status(404).json({ error: 'Game not found' });
+        }
+        if (req.query.admin !== 'true') {
+            const { answer, ...safeGame } = game;
+            return res.json(safeGame);
         }
         res.json(game);
     } catch (error) {
@@ -417,3 +433,35 @@ exports.deleteGame = async (req, res) => {
         res.status(500).json({ error: 'Failed to delete game' });
     }
 };
+
+/**
+ * Get game answer (only called when game is completed / solved)
+ * GET /api/games/:id/answer
+ */
+exports.getGameAnswer = async (req, res) => {
+    try {
+        if (isSupabaseConfigured()) {
+            const { data, error } = await supabase
+                .from('games')
+                .select('id, answer')
+                .eq('id', req.params.id)
+                .single();
+            
+            if (error) {
+                return res.status(404).json({ error: 'Game not found' });
+            }
+            return res.json({ id: data.id, answer: data.answer });
+        }
+
+        const games = readLocalGames();
+        const game = games.find(g => String(g.id) === String(req.params.id));
+        if (!game) {
+            return res.status(404).json({ error: 'Game not found' });
+        }
+        res.json({ id: game.id, answer: game.answer });
+    } catch (error) {
+        console.error('Error fetching game answer:', error);
+        res.status(500).json({ error: 'Failed to retrieve answer' });
+    }
+};
+

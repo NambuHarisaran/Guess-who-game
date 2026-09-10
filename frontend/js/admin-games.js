@@ -57,7 +57,7 @@ function setupMobileDrawer() {
 
 async function loadGames() {
     try {
-        const res = await fetch('/api/games');
+        const res = await fetch('/api/games?admin=true');
         allGames = await res.json();
         applyFiltersAndRender();
     } catch (err) {
@@ -167,6 +167,9 @@ function renderGames(games) {
                     <a href="/game/${game.id}" class="btn btn-primary btn-small">
                         ▶ Launch
                     </a>
+                    <a href="/dual?game1=${game.id}" class="btn btn-secondary btn-small" title="Launch Dual Screen Battle with this question">
+                        ⚔️ Dual
+                    </a>
                     <button class="btn btn-secondary btn-small" onclick="toggleCardReveal('${game.id}', event)" title="Toggle Image Preview">
                         ${isRevealed ? '🔒 Hide' : '👁️ View'}
                     </button>
@@ -245,7 +248,7 @@ async function resetGameProgress(gameId) {
         const formData = new FormData();
         formData.append('revealedTiles', JSON.stringify([]));
 
-        const res = await fetch(`/api/games/${gameId}`, {
+        const res = await fetch(`/api/games/${gameId}?admin=true`, {
             method: 'PUT',
             body: formData
         });
@@ -289,7 +292,7 @@ function closeDeleteModal() {
 async function confirmDeleteGame() {
     if (!gameToDelete) return;
     try {
-        const res = await fetch(`/api/games/${gameToDelete}`, {
+        const res = await fetch(`/api/games/${gameToDelete}?admin=true`, {
             method: 'DELETE'
         });
 
@@ -331,7 +334,7 @@ function setupEventListeners() {
             formData.append('title', title);
             formData.append('answer', answer);
 
-            const res = await fetch(`/api/games/${id}`, {
+            const res = await fetch(`/api/games/${id}?admin=true`, {
                 method: 'PUT',
                 body: formData
             });

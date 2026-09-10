@@ -308,19 +308,20 @@
     border-radius: 18px;
     overflow: hidden;
     display: grid;
+    gap: 0;
     border: 3px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 35px rgba(99, 102, 241, 0.3);
     transform-style: preserve-3d;
     background-color: #0f172a;
 }
 
-/* 3D Tiles */
+/* 3D Tiles - Fully opaque to prevent image bleed-through */
 .tile {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #1e293b 0%, #0b1120 100%);
+    background: #1e293b;
     border: 1px solid var(--tile-border);
     cursor: pointer;
     font-family: 'Poppins', sans-serif;
@@ -330,14 +331,24 @@
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, opacity 0.3s ease;
     transform-style: preserve-3d;
     user-select: none;
+    z-index: 1;
 }
 
 .tile::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent 70%);
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent 70%);
     pointer-events: none;
+    z-index: 2;
+}
+
+.tile::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #1e293b;
+    z-index: -1;
 }
 
 .tile:hover:not(.revealed) {
@@ -375,14 +386,6 @@
         visibility: hidden;
     }
 }
-
-/* Host Peek Mode */
-body.host-peek-active .tile:not(.revealed) {
-    opacity: 0.18;
-    background: rgba(15, 23, 42, 0.25);
-    border-color: rgba(245, 158, 11, 0.4);
-}
-
 /* Grid Layouts */
 .game-board.grid-6 { grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(6, 1fr); }
 .game-board.grid-8 { grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); }
@@ -667,4 +670,11 @@ body.clean-hud-mode .game-board {
     .stat-badge-val { font-size: 1rem; }
     .hud-timer-container { padding: 0.2rem 0.5rem; }
     .numpad-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* Anti-Cheat: Prevent DevTools tricks from revealing the image */
+.game-board .tile:not(.revealed) {
+    background: #1e293b !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }

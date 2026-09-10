@@ -266,7 +266,7 @@ async function initGame() {
     if (!gameId) return;
 
     try {
-        // Load current game
+        // Load current game securely (answer is withheld until game is solved)
         const res = await fetch(`/api/games/${gameId}`);
         if (!res.ok) throw new Error('Game not found');
         const game = await res.json();
@@ -275,7 +275,7 @@ async function initGame() {
         gameState.title = game.title;
         gameState.image = game.image;
         gameState.gridSize = game.gridSize;
-        gameState.answer = game.answer;
+        gameState.answer = game.answer || '';
         gameState.totalTiles = game.gridSize * game.gridSize;
         gameState.revealedTiles = new Set(game.revealedTiles || []);
 
@@ -383,15 +383,18 @@ function revealTile(num) {
     saveGameState();
 }
 
+let isSpinningRandom = false;
+let revealAllTimeoutId = null;
+
 function revealRandomTile() {
-    if (gameState.isComplete) return;
+    if (gameState.isComplete || isSpinningRandom) return;
     const unrevealed = [];
     for (let i = 1; i <= gameState.totalTiles; i++) {
         if (!gameState.revealedTiles.has(i)) unrevealed.push(i);
     }
     if (unrevealed.length === 0) return;
 
-    // Roulette spin sound and quick cycle
+    isSpinningRandom = true;
     let spins = 0;
     const maxSpins = 8;
     const interval = setInterval(() => {
@@ -399,6 +402,7 @@ function revealRandomTile() {
         spins++;
         if (spins >= maxSpins) {
             clearInterval(interval);
+            isSpinningRandom = false;
             const target = unrevealed[Math.floor(Math.random() * unrevealed.length)];
             revealTile(target);
         }
@@ -407,6 +411,8 @@ function revealRandomTile() {
 
 function revealAllTiles() {
     if (gameState.isComplete) return;
+    if (revealAllTimeoutId) clearTimeout(revealAllTimeoutId);
+
     for (let i = 1; i <= gameState.totalTiles; i++) {
         if (!gameState.revealedTiles.has(i)) {
             gameState.revealedTiles.add(i);
@@ -416,7 +422,8 @@ function revealAllTiles() {
             }
         }
     }
-    setTimeout(() => {
+    revealAllTimeoutId = setTimeout(() => {
+        revealAllTimeoutId = null;
         updateStats();
         completeGame();
         saveGameState();
@@ -424,6 +431,12 @@ function revealAllTiles() {
 }
 
 function resetGame() {
+    if (revealAllTimeoutId) {
+        clearTimeout(revealAllTimeoutId);
+        revealAllTimeoutId = null;
+    }
+    isSpinningRandom = false;
+
     audio.playResetWhoosh();
     gameState.revealedTiles.clear();
     gameState.isComplete = false;
@@ -438,7 +451,7 @@ function resetGame() {
     saveGameState();
 }
 
-function completeGame() {
+async function completeGame() {
     gameState.isComplete = true;
     
     // Uncover any remaining tiles so the complete revealed image is shown clearly
@@ -460,7 +473,21 @@ function completeGame() {
 
     audio.playVictoryFanfare();
     if (confetti) confetti.burst();
-    el.answerText.textContent = gameState.answer;
+
+    // Securely fetch revealed answer on completion if not already loaded
+    if (!gameState.answer) {
+        try {
+            const ansRes = await fetch(`/api/games/${gameState.id}/answer`);
+            if (ansRes.ok) {
+                const ansData = await ansRes.json();
+                gameState.answer = ansData.answer || '';
+            }
+        } catch (e) {
+            console.warn('Could not fetch revealed answer:', e);
+        }
+    }
+
+    el.answerText.textContent = gameState.answer || '🎉 Revealed!';
     el.answerDisplay.classList.remove('hidden');
     updateStats();
 }
@@ -536,11 +563,9 @@ function toggleHudMode() {
     document.body.classList.toggle('clean-hud-mode');
 }
 
-// Host Peek Mode Toggle
+// Host Peek Mode Disabled for Anti-Cheat Fairness
 function toggleHostPeek() {
-    gameState.hostPeek = !gameState.hostPeek;
-    document.body.classList.toggle('host-peek-active', gameState.hostPeek);
-    el.btnHostPeek.classList.toggle('active', gameState.hostPeek);
+    // Disabled
 }
 
 // Fullscreen Handler
@@ -636,9 +661,6 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'h':
                 toggleHudMode();
                 break;
-            case 'p':
-                toggleHostPeek();
-                break;
             case 't':
                 toggleTimer();
                 break;
@@ -659,3 +681,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Anti-cheat: Prevent console access to game answers
+(function() {
+    Object.defineProperty(window, 'gameState', {
+        get: function() { return undefined; },
+        set: function() {},
+        configurable: false
+    });
+})();

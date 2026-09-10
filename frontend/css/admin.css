@@ -599,13 +599,13 @@ body {
     position: absolute;
     inset: 0;
     display: grid;
-    gap: 2px;
-    padding: 2px;
+    gap: 0;
+    padding: 0;
     z-index: 2;
 }
 
 .preview-overlay-tile {
-    background: rgba(15, 23, 42, 0.88);
+    background: #0f172a;
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: var(--brand-cyan-light);
     font-size: 0.85rem;
@@ -616,11 +616,14 @@ body {
     justify-content: center;
     transition: all 0.2s;
     user-select: none;
+    opacity: 1 !important;
 }
 
 .preview-overlay-tile:hover, .preview-overlay-tile.tile-peek {
-    opacity: 0.15;
-    background: rgba(245, 158, 11, 0.3);
+    opacity: 1 !important;
+    background: #1e293b;
+    border-color: var(--brand-cyan);
+    box-shadow: inset 0 0 12px rgba(34, 211, 238, 0.25);
 }
 
 .stage-placeholder {
@@ -745,8 +748,8 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.35rem;
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(8px);
+    background: rgb(15, 23, 42);
+    backdrop-filter: none;
     z-index: 2;
     transition: opacity 0.3s ease;
 }
