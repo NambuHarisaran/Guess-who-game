@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ partial "head.html" . }}
+    <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="/css/dual.css">
+    <style>
+        /* Clean Projector Stage View Overrides */
+        body.projector-display-mode {
+            background: #030712;
+            overflow: hidden;
+        }
+        .projector-header-clean {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            background: rgba(11, 19, 41, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+        .projector-stage-container {
+            margin-top: 70px;
+            height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+        }
+        .single-display-mode .dual-stage-arena {
+            grid-template-columns: 1fr;
+            max-width: 900px;
+        }
+        .single-display-mode .dual-game-board {
+            max-width: 620px;
+            max-height: 620px;
+        }
+    </style>
+</head>
+<body class="game-body dual-body projector-display-mode">
+    <!-- Confetti Particle Canvas -->
+    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+    <!-- Clean Audience HUD -->
+    <header class="projector-header-clean">
+        <div class="dual-title-badge">
+            <span class="live-indicator"></span>
+            <h1 id="display-title">Stage Guess Reveal Live</h1>
+        </div>
+
+        <!-- Audience Match Timer -->
+        <div class="dual-timer-wrap">
+            <div class="timer-box">
+                <span>⏱️</span>
+                <span id="disp-timer-text" class="timer-digits">60s</span>
+            </div>
+        </div>
+
+        <button id="btn-fullscreen-disp" class="hud-icon-btn" title="Toggle Fullscreen (F)">⛶</button>
+    </header>
+
+    <div class="projector-stage-container" id="stage-container">
+        <!-- Live Audience Scoreboard -->
+        <section class="dual-scoreboard" style="border-radius: 0;">
+            <!-- Player 1 Score Card -->
+            <div class="player-score-card player-1" id="disp-card-p1">
+                <div class="player-meta">
+                    <div class="player-avatar">1</div>
+                    <div class="player-name-wrap">
+                        <span id="disp-p1-name" style="font-weight: 800; font-size: 1.15rem; color: #fff;">Player 1</span>
+                        <span class="player-rounds-badge">
+                            <span>Wins:</span>
+                            <span id="disp-p1-wins" class="rounds-stars">☆☆☆</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="score-number-display" style="color: var(--p1-light);">
+                    <span id="disp-p1-score">0</span>
+                </div>
+            </div>
+
+            <!-- Center Turn / Buzzer Banner -->
+            <div class="scoreboard-center">
+                <div id="disp-buzzer-banner" class="buzzer-alert-banner">
+                    <span>🔔 Live Arena</span>
+                </div>
+            </div>
+
+            <!-- Player 2 Score Card -->
+            <div class="player-score-card player-2" id="disp-card-p2">
+                <div class="score-number-display" style="color: var(--p2-light);">
+                    <span id="disp-p2-score">0</span>
+                </div>
+                <div class="player-meta">
+                    <div class="player-name-wrap" style="text-align: right;">
+                        <span id="disp-p2-name" style="font-weight: 800; font-size: 1.15rem; color: #fff;">Player 2</span>
+                        <span class="player-rounds-badge" style="justify-content: flex-end;">
+                            <span>Wins:</span>
+                            <span id="disp-p2-wins" class="rounds-stars">☆☆☆</span>
+                        </span>
+                    </div>
+                    <div class="player-avatar">2</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Boards Container -->
+        <main class="dual-stage-arena" id="disp-arena-grid">
+            <!-- Screen 1 Arena -->
+            <section class="board-arena-card arena-p1" id="disp-arena-1">
+                <div class="arena-header">
+                    <div class="arena-title-wrap">
+                        <span class="arena-badge-player">Player 1</span>
+                        <h2 class="arena-question-title" id="disp-p1-title">Question 1</h2>
+                    </div>
+                    <div class="arena-stats-wrap">
+                        <div class="arena-stat-badge">
+                            <span>Left:</span> <strong id="disp-p1-left">0</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="arena-board-viewport">
+                    <div id="disp-p1-board" class="dual-game-board"></div>
+                    <!-- Solved Banner -->
+                    <div id="disp-p1-solved" class="arena-solved-banner hidden">
+                        <div class="solved-card">
+                            <div class="solved-badge">🎉 Question Revealed!</div>
+                            <h3 class="solved-answer-text" id="disp-p1-answer-text"></h3>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen 2 Arena -->
+            <section class="board-arena-card arena-p2" id="disp-arena-2">
+                <div class="arena-header">
+                    <div class="arena-title-wrap">
+                        <span class="arena-badge-player">Player 2</span>
+                        <h2 class="arena-question-title" id="disp-p2-title">Question 2</h2>
+                    </div>
+                    <div class="arena-stats-wrap">
+                        <div class="arena-stat-badge">
+                            <span>Left:</span> <strong id="disp-p2-left">0</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="arena-board-viewport">
+                    <div id="disp-p2-board" class="dual-game-board"></div>
+                    <!-- Solved Banner -->
+                    <div id="disp-p2-solved" class="arena-solved-banner hidden">
+                        <div class="solved-card">
+                            <div class="solved-badge">🎉 Question Revealed!</div>
+                            <h3 class="solved-answer-text" id="disp-p2-answer-text"></h3>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Script for secondary display mirroring -->
+    <script src="/js/display.js"></script>
+</body>
+</html>

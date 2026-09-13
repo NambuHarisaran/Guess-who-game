@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ partial "head.html" . }}
+</head>
+<body>
+    <!-- Aurora Ambient Mesh Background -->
+    <div class="aurora-background">
+        <div class="aurora-glow-1"></div>
+        <div class="aurora-glow-2"></div>
+        <div class="aurora-glow-3"></div>
+    </div>
+
+    <!-- Main Landing Container -->
+    <div class="landing-container">
+        <!-- Header -->
+        <header class="landing-header">
+            <div class="logo">
+                <span class="logo-icon">🎭</span>
+                <h1>Stage Guess Reveal</h1>
+            </div>
+            <div class="nav-tag">
+                <span class="nav-tag-dot"></span>
+                <span>Stage Broadcast Ready &bull; Serverless Hugo</span>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <main class="landing-main">
+            <div class="hero-split">
+                <!-- Left Hero Content -->
+                <div class="hero-content">
+                    <div class="hero-pill">
+                        <span>⚡ Live Audience Reveal Engine</span>
+                    </div>
+                    <h2 class="hero-title">Uncover The Mystery. One Tile At A Time.</h2>
+                    <p class="hero-subtitle">
+                        Host high-stakes visual reveal quiz shows on projectors and large screens. 
+                        Let contestants call out numbers as hidden images emerge!
+                    </p>
+                    
+                    <div class="hero-actions">
+                        <a href="/dual/" class="btn btn-primary btn-large btn-shimmer">
+                            <span class="btn-icon">⚔️</span>
+                            Dual Screen Battle
+                        </a>
+                        <a href="/admin/create/" class="btn btn-secondary btn-large">
+                            <span class="btn-icon">✨</span>
+                            Create Game
+                        </a>
+                        <a href="/admin/games/" class="btn btn-secondary btn-large">
+                            <span class="btn-icon">🎮</span>
+                            Browse Games
+                        </a>
+                        <a href="/admin/" class="btn btn-secondary btn-large">
+                            <span class="btn-icon">📊</span>
+                            Dashboard
+                        </a>
+                    </div>
+
+                    <div class="hero-specs">
+                        <div class="hero-spec-item">
+                            <span>📺</span> 1080p / 4K Optimized
+                        </div>
+                        <div class="hero-spec-item">
+                            <span>🔊</span> Synthesized Audio
+                        </div>
+                        <div class="hero-spec-item">
+                            <span>⚡</span> Zero Backend / Pure Static
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Hero Interactive Demo -->
+                <div class="hero-preview-container">
+                    <div class="hero-preview-header">
+                        <div class="hero-preview-title">
+                            <span>🎯</span>
+                            <span>Interactive Live Preview</span>
+                        </div>
+                        <span id="preview-status-count" class="preview-badge-status">9 left</span>
+                    </div>
+
+                    <div id="hero-preview-board" class="preview-board">
+                        <!-- Rendered by landing-demo.js -->
+                    </div>
+
+                    <div class="hero-preview-footer">
+                        <span>Click tiles to test reveal effect</span>
+                        <button id="preview-reset-btn" class="preview-reset-btn">↺ Reset Demo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <section class="features-section">
+                <div class="section-header-center">
+                    <h2>Engineered For Live Stage Events</h2>
+                    <p>Everything you need for an unforgettable quiz experience</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon-wrap">⚔️</div>
+                        <h3>Dual Screen & Scoring</h3>
+                        <p>Host 2 players simultaneously with 2 separate questions, live buzzers, and multi-display outputs.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrap">🖼️</div>
+                        <h3>Instant Artwork Upload</h3>
+                        <p>Upload any high-res photo with live interactive grid overlay preview stored right in your browser.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrap">🔢</div>
+                        <h3>Adaptive Grid Layouts</h3>
+                        <p>Select from 6×6 (36 tiles), 8×8 (64 tiles), or 10×10 (100 tiles) to calibrate quiz difficulty.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrap">🔊</div>
+                        <h3>Built-in Audio & FX</h3>
+                        <p>Dynamic chimes, roulette spins, tension countdown alarms, and victory fanfares.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="landing-footer">
+            <p>Stage Guess Reveal Game &bull; Built for live quiz shows, conferences, and event hosting</p>
+        </footer>
+    </div>
+
+    <script src="/js/landing-demo.js"></script>
+</body>
+</html>

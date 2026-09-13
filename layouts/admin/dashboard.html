@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ partial "head.html" . }}
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        {{ partial "admin-sidebar.html" (dict "active" "dashboard") }}
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Topbar -->
+            <div class="admin-topbar">
+                <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <div class="topbar-title">
+                    <h1>Stage Monitor</h1>
+                    <p>Live event controls, metrics, and round manager</p>
+                </div>
+                <div class="topbar-actions">
+                    <a href="/dual/" class="btn btn-secondary">
+                        <span class="btn-icon">⚔️</span> Dual Battle
+                    </a>
+                    <a href="/admin/create/" class="btn btn-primary btn-glow">
+                        <span class="btn-icon">✨</span> Create New Game
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <section class="stats-grid">
+                <div class="stat-card glass-card">
+                    <div class="stat-icon-wrapper indigo">
+                        <span class="stat-icon">🎮</span>
+                    </div>
+                    <div class="stat-info">
+                        <span id="total-games" class="stat-number">0</span>
+                        <span class="stat-label">Total Stage Games</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card glass-card">
+                    <div class="stat-icon-wrapper cyan">
+                        <span class="stat-icon">🖼️</span>
+                    </div>
+                    <div class="stat-info">
+                        <span id="total-images" class="stat-number">0</span>
+                        <span class="stat-label">Image Assets</span>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card">
+                    <div class="stat-icon-wrapper amber">
+                        <span class="stat-icon">⏳</span>
+                    </div>
+                    <div class="stat-info">
+                        <span id="active-games" class="stat-number">0</span>
+                        <span class="stat-label">In-Progress Rounds</span>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card">
+                    <div class="stat-icon-wrapper rose">
+                        <span class="stat-icon">🌟</span>
+                    </div>
+                    <div class="stat-info">
+                        <span id="recent-game" class="stat-number" style="font-size: 1.25rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">None</span>
+                        <span class="stat-label">Latest Addition</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Action Hub -->
+            <section class="dashboard-section">
+                <div class="section-title-wrap">
+                    <h2>Live Stage Launchpad</h2>
+                    <p>Start a round directly or manage audience display mirroring</p>
+                </div>
+                <div class="quick-actions-row">
+                    <a href="/dual/" class="action-card-large battle">
+                        <div class="action-card-content">
+                            <div class="action-card-badge">2-Player Stage</div>
+                            <h3>⚔️ Dual Screen Battle</h3>
+                            <p>Host 2 contestants with live buzzers, customizable scoring, and split audience monitors.</p>
+                            <span class="action-card-btn">Launch Dual Match &rarr;</span>
+                        </div>
+                    </a>
+                    <a href="/admin/create/" class="action-card-large create">
+                        <div class="action-card-content">
+                            <div class="action-card-badge">Studio</div>
+                            <h3>✨ Create New Round</h3>
+                            <p>Upload new artwork, pick grid density (6×6, 8×8, 10×10), and test tile overlay live.</p>
+                            <span class="action-card-btn">Open Studio &rarr;</span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Quick Launch Playlist -->
+            <section class="dashboard-section">
+                <div class="section-title-wrap">
+                    <h2>Stage Playlist</h2>
+                    <a href="/admin/games/" class="link-see-all">Manage All Games &rarr;</a>
+                </div>
+                
+                <div id="quick-launch-list" class="quick-launch-grid">
+                    <!-- Populated by admin.js -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/gamestore.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ partial "head.html" . }}
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        {{ partial "admin-sidebar.html" (dict "active" "create") }}
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Topbar -->
+            <div class="admin-topbar">
+                <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <div class="topbar-title">
+                    <h1>Create Stage Game</h1>
+                    <p>Upload artwork and test the real-time interactive grid overlay (Serverless & Client-Side)</p>
+                </div>
+                <div class="topbar-actions">
+                    <a href="/admin/games/" class="btn btn-secondary">
+                        <span class="btn-icon">🎮</span> View All Games
+                    </a>
+                </div>
+            </div>
+
+            <!-- Studio Split Layout -->
+            <div class="studio-layout">
+                <!-- Left Configuration Panel -->
+                <div class="studio-form-panel glass-card">
+                    <form id="create-game-form" class="game-form" enctype="multipart/form-data">
+                        <!-- Game Title & Category -->
+                        <div class="form-row">
+                            <div class="form-group flex-2">
+                                <label for="game-title">Game Title <span class="req">*</span></label>
+                                <input type="text" id="game-title" name="title" placeholder="e.g., Hollywood Celebrity Reveal" required>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label for="game-category">Category</label>
+                                <select id="game-category" name="category">
+                                    <option value="Celebrities">🎭 Celebrities</option>
+                                    <option value="Movies">🎬 Movies</option>
+                                    <option value="Anime">⚡ Anime & Games</option>
+                                    <option value="Landmarks">🏛️ Landmarks</option>
+                                    <option value="Logos">🎯 Logos</option>
+                                    <option value="General">🌟 General</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload Area -->
+                        <div class="form-group">
+                            <label>Artwork Image <span class="req">*</span></label>
+                            <div class="upload-dropzone" id="upload-area">
+                                <input type="file" id="game-image" name="image" accept="image/jpeg,image/png,image/webp,image/gif" class="file-input">
+                                <div class="dropzone-content" id="dropzone-content">
+                                    <div class="dropzone-icon">🖼️</div>
+                                    <h4>Drag & Drop Artwork Here</h4>
+                                    <p>or <span class="browse-link">browse files</span> from your computer</p>
+                                    <span class="file-limits">Supports JPG, PNG, WebP up to 15MB</span>
+                                </div>
+                                <div class="dropzone-meta hidden" id="dropzone-meta">
+                                    <span class="meta-icon">✓</span>
+                                    <div class="meta-details">
+                                        <span id="meta-file-name" class="meta-name">image.jpg</span>
+                                        <span id="meta-file-size" class="meta-size">2.4 MB</span>
+                                    </div>
+                                    <button type="button" id="btn-remove-image" class="btn-remove-file" title="Change Image">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grid Size Option Cards -->
+                        <div class="form-group">
+                            <label>Grid Difficulty & Layout <span class="req">*</span></label>
+                            <div class="grid-options">
+                                <label class="grid-card">
+                                    <input type="radio" name="gridSize" value="6">
+                                    <div class="grid-card-inner">
+                                        <span class="grid-icon">🟢</span>
+                                        <h4>6 × 6</h4>
+                                        <span class="grid-count">36 Tiles</span>
+                                        <span class="grid-desc">Quick & Dynamic</span>
+                                    </div>
+                                </label>
+                                <label class="grid-card">
+                                    <input type="radio" name="gridSize" value="8" checked>
+                                    <div class="grid-card-inner">
+                                        <span class="grid-icon">🔵</span>
+                                        <h4>8 × 8</h4>
+                                        <span class="grid-count">64 Tiles</span>
+                                        <span class="grid-desc">Stage Standard</span>
+                                    </div>
+                                </label>
+                                <label class="grid-card">
+                                    <input type="radio" name="gridSize" value="10">
+                                    <div class="grid-card-inner">
+                                        <span class="grid-icon">🟣</span>
+                                        <h4>10 × 10</h4>
+                                        <span class="grid-count">100 Tiles</span>
+                                        <span class="grid-desc">Expert Challenge</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Secret Answer -->
+                        <div class="form-group">
+                            <label for="game-answer">Secret Answer <span class="req">*</span></label>
+                            <input type="text" id="game-answer" name="answer" placeholder="e.g., Leonardo DiCaprio" required>
+                            <span class="input-helper">This answer is revealed automatically upon round completion.</span>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <a href="/admin/games/" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" id="btn-submit-game" class="btn btn-primary btn-glow">
+                                <span class="btn-icon">✨</span> Create & Launch Game
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Live Overlay Preview Panel -->
+                <div class="studio-preview-panel glass-card">
+                    <div class="preview-panel-header">
+                        <div class="preview-tag">
+                            <span>🎯</span>
+                            <h3>Live Stage Grid Preview</h3>
+                        </div>
+                        <span id="preview-tile-count" class="preview-badge-status">64 Tiles (8×8)</span>
+                    </div>
+
+                    <div class="stage-preview-viewport">
+                        <div id="stage-image-underlay" class="stage-image-underlay"></div>
+                        <div id="stage-grid-overlay" class="stage-grid-overlay">
+                            <!-- Preview tiles generated dynamically -->
+                        </div>
+                        <div id="stage-placeholder" class="stage-placeholder">
+                            <span>🖼️</span>
+                            <p>Upload an artwork file to see the interactive numbered stage grid preview here.</p>
+                        </div>
+                    </div>
+
+                    <div class="preview-panel-footer">
+                        <span>💡 Grids automatically scale to maintain crisp 1:1 aspect ratios on stage projectors.</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message">Game created successfully!</span>
+    </div>
+
+    <script src="/js/gamestore.js"></script>
+    <script src="/js/admin-create.js"></script>
+</body>
+</html>

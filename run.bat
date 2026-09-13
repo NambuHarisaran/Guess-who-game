@@ -1,45 +1,34 @@
 @echo off
-title Stage Guess Reveal Game
+title Stage Guess Reveal Game (Hugo Extended)
 setlocal
 
 cd /d "%~dp0"
 
 echo ===================================================
-echo        Starting Stage Guess Reveal Game
+echo     Stage Guess Reveal Game (Hugo Extended)
 echo ===================================================
 echo.
 
-:: Check for Node.js
-where node >nul 2>nul
+:: Check for Hugo
+where hugo >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERROR] Node.js is not installed or not in PATH!
-    echo Please download and install Node.js from: https://nodejs.org
+    echo [ERROR] Hugo is not installed or not in PATH!
+    echo Please install Hugo Extended from: https://gohugo.io/installation/
     echo.
     pause
     exit /b 1
 )
 
-:: Check if node_modules exists, otherwise install dependencies
-if not exist "node_modules\" (
-    echo [INFO] Dependencies not found. Installing packages with npm install...
-    call npm install
-    if %errorlevel% neq 0 (
-        echo [ERROR] npm install failed! Please check your internet connection.
-        pause
-        exit /b 1
-    )
-    echo.
-)
-
 :: Open browser automatically after a short delay in background
-start "" cmd /c "timeout /t 2 /nobreak >nul & start http://localhost:3000"
+start "" cmd /c "timeout /t 2 /nobreak >nul & start http://localhost:1313"
 
-echo [INFO] Server starting at http://localhost:3000
-echo [INFO] Both backend API and frontend are running together.
-echo [INFO] Press Ctrl+C in this window to stop the server.
+echo [INFO] Server starting at http://localhost:1313
+echo [INFO] Serverless Static Site running with Hugo Extended!
+echo [INFO] Zero backend, zero databases, 100% offline & stage-ready.
+echo [INFO] Press Ctrl+C in this window to stop.
 echo.
 
-:: Start Node.js server
-node backend/server.js
+:: Start Hugo server
+hugo server -p 1313
 
 pause

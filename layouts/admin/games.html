@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ partial "head.html" . }}
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        {{ partial "admin-sidebar.html" (dict "active" "games") }}
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Topbar -->
+            <div class="admin-topbar">
+                <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <div class="topbar-title">
+                    <h1>Games Management Hub</h1>
+                    <p>Search, launch, copy stage links, reset progress, or edit rounds (Client-Side Storage)</p>
+                </div>
+                <div class="topbar-actions">
+                    <button id="btn-export-games" class="btn btn-secondary" title="Export Backup JSON">
+                        <span class="btn-icon">💾</span> Export Backup
+                    </button>
+                    <button id="btn-import-games" class="btn btn-secondary" title="Import Games JSON">
+                        <span class="btn-icon">📥</span> Import
+                    </button>
+                    <input type="file" id="file-import-input" accept="application/json" style="display: none;">
+                    <a href="/dual/" class="btn btn-secondary">
+                        <span class="btn-icon">⚔️</span> Dual Battle
+                    </a>
+                    <a href="/admin/create/" class="btn btn-primary btn-glow">
+                        <span class="btn-icon">✨</span> Create New Game
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filter & Search Toolbar -->
+            <section class="toolbar-glass glass-card">
+                <div class="search-field">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder="Search by game title or answer...">
+                </div>
+                <div class="filter-group">
+                    <button id="btn-toggle-all-images" class="btn btn-secondary btn-small" title="Toggle Artwork Visibility for All Games">
+                        <span>👁️ Reveal All Artwork</span>
+                    </button>
+                    <select id="filter-grid">
+                        <option value="">All Grid Sizes</option>
+                        <option value="6">6×6 (36 Tiles)</option>
+                        <option value="8">8×8 (64 Tiles)</option>
+                        <option value="10">10×10 (100 Tiles)</option>
+                    </select>
+                    <select id="sort-by">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="name">Alphabetical</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Games Grid -->
+            <section class="games-grid-container" id="games-grid">
+                <!-- Rendered dynamically via admin-games.js -->
+                <div class="empty-state">
+                    <span class="empty-icon">⏳</span>
+                    <h3>Loading games...</h3>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Quick Edit Modal -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Edit Game</h3>
+                <button class="modal-close" id="btn-close-edit">&times;</button>
+            </div>
+            <form id="edit-game-form">
+                <input type="hidden" id="edit-game-id">
+                <div class="form-group">
+                    <label for="edit-game-title">Game Title</label>
+                    <input type="text" id="edit-game-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-game-answer">Secret Answer</label>
+                    <input type="text" id="edit-game-answer" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-edit">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Delete Game?</h3>
+                <button class="modal-close" id="btn-close-delete">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete "<strong id="delete-game-title"></strong>"?</p>
+                <p style="color: var(--brand-rose); font-size: 0.85rem; margin-top: 0.5rem;">This will remove the game from the playlist.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-delete" class="btn btn-secondary">Cancel</button>
+                <button id="btn-confirm-delete" class="btn btn-danger">Yes, Delete Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="/js/gamestore.js"></script>
+    <script src="/js/admin-games.js"></script>
+</body>
+</html>

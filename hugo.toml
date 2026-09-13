@@ -1,0 +1,20 @@
+baseURL = '/'
+defaultContentLanguage = 'en'
+locale = 'en-US'
+title = 'Stage Guess Reveal Game'
+
+# Disable taxonomies as they are not needed for this app
+disableKinds = ['taxonomy', 'term']
+
+[outputs]
+  home = ['HTML']
+  page = ['HTML']
+  section = ['HTML']
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[build]
+  writeStats = false

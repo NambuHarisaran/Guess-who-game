@@ -1,245 +1,141 @@
-# Stage Guess Reveal Game
+# Stage Guess Reveal Game (Hugo Extended Edition)
 
-A web application for physical quiz events where hidden images are revealed through a numbered grid when tiles are clicked. Perfect for live events where audiences call numbers and the host clicks them to reveal parts of the image.
+A high-performance, serverless static web application for physical quiz events where hidden images are revealed through a numbered grid when tiles are clicked. Re-architected with **Hugo Extended** to run 100% client-side with **zero backend dependencies**, zero external databases, and zero API services required.
 
-## Features
+---
 
-- **Dual Screen & 2-Player Battle Arena**: Host 2 contestants or teams simultaneously with 2 separate questions/boards
-- **Interactive Scoring System**: Live scoreboard with customizable points (+100 correct, -25 penalty, custom adjustments), round wins counter, and floating animations
-- **Buzzer Lockout System**: Integrated player buzzers (Shortcuts `1` and `2`) with audio synthesis and lockout alerts
-- **Multi-Monitor / Projector Popout Support**: Real-time zero-latency broadcast mirroring (`/display/dual`, `/display/1`, `/display/2`) so the audience only sees the live game while hosts keep peek spoilers
-- **Admin Dashboard & Management Hub**: Create, manage, and delete games with search and quick launch
-- **Customizable Grids**: Choose from 6×6, 8×8, or 10×10 tile layouts
-- **Interactive Reveal**: Click tiles or enter numbers to reveal parts of the image
-- **Host Stage Controls**: Host peek mode (`P`), countdown timer (`T`), clean HUD presentation mode (`H`), and sound toggle (`M`)
-- **Web Audio Synthesis**: Dynamic chimes, roulette spins, buzzers, and victory fanfares without external audio asset dependencies
-- **Projector & 4K Optimized**: Broadcast glassmorphism layout with smooth 3D tile flip animations
+## ✨ Highlights & Architecture
 
-## Screenshots
+- **100% Serverless & Backend-Free**: No Node.js server, no Express, no Supabase, no Cloudinary, and no environment variables required!
+- **Hugo Extended Static Site Generator**: Instant sub-second compilation (`hugo`) and lightning fast live development (`hugo server`).
+- **Client-Side GameStore (IndexedDB & LocalStorage)**: Create, edit, delete, and persist games directly in the browser with full image support.
+- **Dual Screen & 2-Player Battle Arena**: Host 2 contestants or teams simultaneously with 2 separate questions/boards (`/dual/`).
+- **Real-Time Projector Popouts**: Zero-latency audience display mirroring (`/display/`) powered by peer-to-peer `BroadcastChannel`.
+- **Interactive Scoring & Buzzer Lockout**: Integrated buzzer sound synthesis (`1` and `2` keyboard shortcuts), round wins counter, and custom point adjustments.
+- **Web Audio Synthesis**: Dynamic chimes, countdown tension alarms, roulette ticks, and victory fanfares without external audio asset downloads.
+- **Backup Export & Import**: Download your custom quiz games as JSON or import them on another machine in one click.
+- **Static Hosting Everywhere**: Deploy on GitHub Pages, Cloudflare Pages, Vercel, Netlify, or AWS S3 with zero cost.
 
-The application includes:
-- Landing page with modern game-show styling
-- Admin dashboard with stats and quick actions
-- Game creation form with image upload and grid preview
-- Games management page with search and filters
-- Full-featured game screen with controls
+---
 
-## Tech Stack
+## 🚀 Quick Start
 
-- **Frontend**: HTML, CSS, JavaScript (Vanilla)
-- **Backend**: Node.js with Express
-- **Database**: Supabase (PostgreSQL)
-- **Image Storage**: Cloudinary (persistent cloud storage)
-- **File Upload**: Multer for image handling
+### 1. Requirements
+- **Hugo Extended** (v0.120+ recommended)
+  - Windows (winget): `winget install Hugo.Hugo.Extended`
+  - macOS (brew): `brew install hugo`
+  - Linux: Download the `extended` binary from [Hugo Releases](https://github.com/gohugoio/hugo/releases)
 
-## Installation
+### 2. Start Development Server
 
-1. **Clone or navigate to the project directory**
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up Supabase** (required for database)
-   - Create a free account at [supabase.com](https://supabase.com)
-   - Create a new project
-   - Go to SQL Editor and run this query to create the games table:
-   ```sql
-   CREATE TABLE games (
-     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-     title TEXT NOT NULL,
-     image TEXT NOT NULL,
-     grid_size INTEGER NOT NULL DEFAULT 6,
-     answer TEXT NOT NULL,
-     revealed_tiles JSONB DEFAULT '[]',
-     created_at TIMESTAMPTZ DEFAULT NOW(),
-     updated_at TIMESTAMPTZ DEFAULT NOW()
-   );
-   
-   ALTER TABLE games ENABLE ROW LEVEL SECURITY;
-   CREATE POLICY "Allow all" ON games FOR ALL USING (true);
-   ```
-   - Go to Settings → API and copy your URL and anon key
-
-4. **Set up Cloudinary** (required for image uploads)
-   - Create a free account at [cloudinary.com](https://cloudinary.com)
-   - Go to your Dashboard and copy your credentials
-
-5. **Create a `.env` file** in the project root:
-   ```env
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-6. **Start the server**
-   ```bash
-   npm start
-   ```
-
-7. **Open in browser**
-   ```
-   http://localhost:3000
-   ```
-
-## Deployment (Vercel)
-
-1. Push your code to GitHub
-2. Import the project in Vercel
-3. Add Environment Variables in Vercel dashboard:
-   - `CLOUDINARY_CLOUD_NAME`
-   - `CLOUDINARY_API_KEY`
-   - `CLOUDINARY_API_SECRET`
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-4. Deploy!
-
-## Project Structure
-
+Run the batch script (Windows):
+```cmd
+run.bat
 ```
-project-root/
-│
-├── backend/
-│   ├── server.js           # Express server setup
-│   ├── routes/
-│   │   └── gameRoutes.js   # API route definitions
-│   ├── controllers/
-│   │   └── gameController.js  # Business logic
-│   └── data/
-│       └── games.json      # Game data storage
-│
-├── frontend/
-│   ├── index.html          # Landing page
-│   ├── game.html           # Game play screen
-│   ├── admin.html          # Admin dashboard
-│   ├── admin-create.html   # Create new game
-│   ├── admin-games.html    # Manage games
-│   ├── css/
-│   │   ├── styles.css      # Global styles
-│   │   ├── game.css        # Game screen styles
-│   │   └── admin.css       # Admin panel styles
-│   └── js/
-│       ├── game.js         # Game logic
-│       ├── admin.js        # Dashboard logic
-│       ├── admin-create.js # Game creation logic
-│       └── admin-games.js  # Games management
-│
-├── uploads/                 # Uploaded images storage
-│
-├── package.json
-└── README.md
+Or use the Hugo CLI directly:
+```bash
+hugo server -p 1313
+```
+Then open your browser at:
+```
+http://localhost:1313
 ```
 
-## Usage
-
-### Creating a Game
-
-1. Go to **Admin Dashboard** (`/admin`)
-2. Click **Create Game** or navigate to `/admin/create`
-3. Fill in the form:
-   - **Title**: Name for the game
-   - **Image**: Upload the image to reveal (JPG, PNG, GIF, WebP)
-   - **Grid Size**: Choose 6×6, 8×8, or 10×10
-   - **Answer**: The correct answer (shown when revealed)
-4. Click **Create Game**
-
-### Playing a Game
-
-1. Go to **All Games** (`/admin/games`)
-2. Click **Play** on any game
-3. The game screen shows:
-   - Numbered tiles covering the image
-   - Stats showing tiles revealed/remaining
-   - Control buttons
-
-### Game Controls
-
-**Buttons:**
-- **Reset**: Reset all tiles to hidden state
-- **Random**: Reveal a random tile
-- **Reveal All**: Show the entire image at once
-- **Give Up**: Reveal everything and show the answer
-
-**Keyboard Shortcuts:**
-- `1-9`: Reveal tiles 1-9 directly
-- `Space`: Reveal a random tile
-- `R`: Reset the board
-- `F`: Toggle fullscreen mode
-
-**Number Input:**
-- Type any tile number and press Enter or click Reveal
-
-### Managing Games
-
-1. Navigate to `/admin/games`
-2. Use **Search** to find specific games
-3. **Filter** by grid size
-4. **Sort** by date or name
-5. Click **Delete** to remove a game (with confirmation)
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/games` | Get all games |
-| GET | `/api/games/:id` | Get a specific game |
-| POST | `/api/games` | Create a new game |
-| PUT | `/api/games/:id` | Update a game |
-| DELETE | `/api/games/:id` | Delete a game |
-
-### Create Game Request
-
-```
-POST /api/games
-Content-Type: multipart/form-data
-
-Fields:
-- title: string (required)
-- image: file (required)
-- gridSize: number (6, 8, or 10) (required)
-- answer: string (required)
-```
-
-### Game Object Response
-
-```json
-{
-  "id": "uuid-string",
-  "title": "Movie Star Quiz",
-  "image": "/uploads/filename.jpg",
-  "gridSize": 8,
-  "answer": "Tom Cruise",
-  "createdAt": "2024-01-15T10:30:00.000Z",
-  "revealedTiles": []
-}
-```
-
-## Configuration
-
-The server runs on port `3000` by default. You can change this by setting the `PORT` environment variable:
+### 3. Build for Production
 
 ```bash
-PORT=8080 npm start
+hugo --minify
+```
+The complete production-ready static site is generated in the `public/` directory!
+
+---
+
+## 📁 Project Structure
+
+```
+stage-guess-reveal/
+├── content/                     # Hugo Markdown content & routes
+│   ├── _index.md                # Landing page (/)
+│   ├── game/                    # Game screens (/game/ & /game/<id>/)
+│   ├── dual/                    # Dual Screen Battle (/dual/)
+│   ├── display/                 # Audience Projector Display (/display/)
+│   └── admin/                   # Admin Studio Hub
+│       ├── _index.md            # Dashboard (/admin/)
+│       ├── create.md            # Create Studio (/admin/create/)
+│       └── games.md             # Games Hub (/admin/games/)
+│
+├── data/
+│   └── games.json               # Default bundled stage games
+│
+├── layouts/                     # Hugo semantic HTML templates
+│   ├── index.html               # Landing page layout
+│   ├── _default/                # Fallback templates
+│   ├── partials/                # Reusable partials (head, sidebar)
+│   ├── game/                    # Single & list game templates
+│   ├── dual/                    # Dual screen battle layout
+│   ├── display/                 # Projector display layout
+│   └── admin/                   # Dashboard, create, and games layouts
+│
+├── static/                      # Static assets served as-is
+│   ├── css/                     # Glassmorphic responsive stylesheets
+│   ├── js/                      # Client-side engines
+│   │   ├── gamestore.js         # Client-side IndexedDB/LocalStorage CRUD
+│   │   ├── game.js              # Single board game engine
+│   │   ├── dual.js              # Dual battle & scoreboard engine
+│   │   ├── display.js           # Audience secondary mirror client
+│   │   ├── admin.js             # Admin dashboard controller
+│   │   ├── admin-create.js      # Studio creation logic
+│   │   ├── admin-games.js       # Games management & backup
+│   │   └── landing-demo.js      # Interactive hero preview
+│   ├── data/                    # JSON access for client runtime
+│   └── uploads/                 # Bundled game artwork images
+│
+├── hugo.toml                    # Hugo configuration
+├── package.json                 # Hugo helper scripts
+├── run.bat                      # One-click Windows launch script
+└── vercel.json                  # One-click static deployment config
 ```
 
-## Browser Support
+---
 
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
+## 🎮 Game Controls & Keyboard Shortcuts
 
-## Tips for Live Events
+### Single Board (`/game/`)
+- `Space`: Reveal a random tile with roulette sound FX
+- `R`: Reset board to 0 revealed tiles
+- `A`: Reveal all tiles simultaneously
+- `T`: Toggle countdown timer
+- `M`: Toggle audio mute
+- `H`: Clean HUD presentation mode (hides host controls for projectors)
+- `F`: Toggle fullscreen mode
+- `Enter`: Next game (when current game is completed)
 
-1. **Use Fullscreen Mode**: Press `F` or click the fullscreen button
-2. **Large Display**: Designed for 1920×1080 projectors
-3. **Number Input**: Use the number input field for quick tile reveals
-4. **Random Mode**: Use Space bar for audience participation games
-5. **Reset Between Rounds**: The Reset button restores all tiles
+### Dual Screen Battle (`/dual/`)
+- `1`: Player 1 Buzzer
+- `2`: Player 2 Buzzer
+- `Space`: Random tile reveal
+- `T`: Toggle shared match countdown timer
+- `M`: Toggle sound FX
+- `H`: Toggle Clean HUD presentation mode
+- `F`: Toggle fullscreen mode
 
-## License
+---
 
-MIT License - Feel free to use and modify for your events!
+## 🌐 Deployment
+
+### Vercel
+Push your repository to GitHub, connect to Vercel, and choose Hugo (or let Vercel auto-detect). Vercel builds the site automatically using `hugo --minify`.
+
+### GitHub Pages
+Enable GitHub Pages in your repository settings with GitHub Actions (Hugo workflow template).
+
+### Cloudflare Pages
+1. Create a project in Cloudflare Pages connected to your git repository.
+2. Build command: `hugo --minify`
+3. Build output directory: `public`
+
+---
+
+## 📄 License
+
+MIT License - Free to use and customize for your quiz events!

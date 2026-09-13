@@ -1,0 +1,46 @@
+        <!-- Mobile Drawer Overlay -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+        <!-- Glassmorphic Sidebar -->
+        <aside class="admin-sidebar" id="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <span class="logo-icon">🎭</span>
+                    <div>
+                        <h2>Stage Admin</h2>
+                        <span class="badge-stage">Reveal Engine</span>
+                    </div>
+                </div>
+                <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Close menu">&times;</button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/admin/" class="nav-item {{ if eq .active "dashboard" }}active{{ end }}">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/dual/" class="nav-item">
+                    <span class="nav-icon">⚔️</span>
+                    <span>Dual Screen Battle</span>
+                </a>
+                <a href="/admin/create/" class="nav-item {{ if eq .active "create" }}active{{ end }}">
+                    <span class="nav-icon">✨</span>
+                    <span>Create Studio</span>
+                </a>
+                <a href="/admin/games/" class="nav-item {{ if eq .active "games" }}active{{ end }}">
+                    <span class="nav-icon">🎮</span>
+                    <span>All Games</span>
+                </a>
+                <a href="/" class="nav-item">
+                    <span class="nav-icon">🚀</span>
+                    <span>Home Screen</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    <span>Client Storage Active</span>
+                </div>
+            </div>
+        </aside>

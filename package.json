@@ -1,30 +1,20 @@
 {
   "name": "stage-guess-reveal-game",
-  "version": "1.0.0",
-  "description": "A web application for physical quiz events where hidden images are revealed through a numbered grid",
-  "main": "backend/server.js",
+  "version": "2.0.0",
+  "description": "Serverless Stage Guess Reveal Game built with Hugo Extended",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "node backend/server.js"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "start": "hugo server -p 1313",
+    "dev": "hugo server -D -p 1313",
+    "build": "hugo --minify"
   },
   "keywords": [
     "quiz",
     "game",
     "reveal",
-    "image"
+    "image",
+    "hugo",
+    "serverless",
+    "static-site"
   ],
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.98.0",
-    "cloudinary": "^2.9.0",
-    "cors": "^2.8.5",
-    "dotenv": "^17.3.1",
-    "express": "^4.18.2",
-    "multer": "^1.4.5-lts.1",
-    "uuid": "^9.0.0"
-  }
+  "license": "MIT"
 }

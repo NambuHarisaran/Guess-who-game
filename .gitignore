@@ -1,3 +1,8 @@
+# Hugo build output
+public/
+resources/_gen/
+.hugo_build.lock
+
 # Build output
 dist/
 
@@ -21,7 +26,3 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
-
-# Optional: Don't track uploads in git (remove if you want to include them)
-# uploads/*
-# !uploads/.gitkeep
