@@ -5,7 +5,7 @@
   "scripts": {
     "start": "hugo server -p 1313",
     "dev": "hugo server -D -p 1313",
-    "build": "hugo --minify"
+    "build": "hugo --gc --minify"
   },
   "keywords": [
     "quiz",
